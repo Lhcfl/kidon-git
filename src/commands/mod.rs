@@ -6,21 +6,30 @@ mod checkout;
 mod commit;
 mod init;
 mod merge;
-mod rm;
+mod remove;
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
-    /// Commit this
+    /// Record changes to the repository
     Commit(commit::Commit),
-    /// Add files to buffer
+    /// Add file contents to the index
     Add(add::Add),
+    /// Create an empty Git repository or reinitialize an existing one
     Init(init::Init),
+    /// List, create, or delete branches
     Branch(branch::Branch),
+    /// Switch branches or restore working tree files
     Checkout(checkout::Checkout),
+    /// Join two or more development histories together
     Merge(merge::Merge),
-    Rm(rm::Rm),
+    /// Remove files from the working tree and from the index
+    #[command(aliases(["remove"]))]
+    Rm(remove::Remove),
+    /// Download objects and refs from another repository
     Fetch,
+    /// Fetch from and integrate with another repository or a local branch
     Pull,
+    /// Update remote refs along with associated objects
     Push,
 }
 

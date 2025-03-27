@@ -3,11 +3,11 @@ use clap::Args;
 use super::Exec;
 
 #[derive(Debug, Args)]
-pub struct Rm {
+pub struct Remove {
     files: Vec<String>,
 }
 
-impl Exec for Rm {
+impl Exec for Remove {
     fn exec(&self) {
         panic!("rm is not implemented")
     }
