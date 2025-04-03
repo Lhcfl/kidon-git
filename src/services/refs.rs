@@ -1,20 +1,17 @@
-use std::path::Path;
+use crate::traits::DirContainer;
 
-const REFS_DIR: &str = "refs";
+pub enum RefsKind {
+    Branch,
+    Tag,
+}
 
 /// Referance to a commit
+/// It may have a context of remote, but we don't store it here
 pub struct Refs {
+    pub kind: RefsKind,
     pub sha1: String,
 }
 
-impl Refs {
-    pub fn new(sha1: String) -> Self {
-        Self { sha1 }
-    }
-}
-
-pub fn init_dir(path: &Path) -> Result<(), std::io::Error> {
-    let refs_path = path.join(REFS_DIR);
-    std::fs::create_dir_all(refs_path)?;
-    Ok(())
+impl DirContainer for Refs {
+    const DIRECTORY: &'static str = "refs";
 }

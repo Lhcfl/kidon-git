@@ -1,5 +1,6 @@
 mod commands;
 mod services;
+mod traits;
 
 use clap::Parser;
 use commands::Exec;

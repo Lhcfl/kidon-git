@@ -1,28 +1,36 @@
 //! Repository services
 
-const GIT_DIR: &str = ".kidon-git";
-
 use std::{
-    fs,
+    env, fs,
     io::{self, ErrorKind},
-    path::Path,
+    path::PathBuf,
 };
+
+use crate::traits::DirContainer;
 
 use super::{object, refs};
 
 #[derive(Debug)]
 pub struct Repository {
-    pub path: &'static Path,
+    pub path: PathBuf,
 }
 
-impl Repository {}
+impl DirContainer for Repository {
+    const DIRECTORY: &str = ".kidon-git";
+}
 
 #[derive(Debug)]
 #[allow(dead_code)]
 pub enum RepositoryInitError {
+    /// The repository is not initialized
     NotInitialized,
+    /// The dir is not a git repository, or is broken
+    BadGitRepositoryDir,
+    /// Some of subdirectories are not initialized
     NotADirectory(io::Error),
+    /// Some of directory already exists
     AlreadyExists(io::Error),
+    /// Unknown error
     UnknownError(io::Error),
 }
 
@@ -37,27 +45,36 @@ impl From<io::Error> for RepositoryInitError {
     }
 }
 
-/// Load the repository form .git folder
-/// TODO
-pub fn load() -> Result<Repository, RepositoryInitError> {
-    let dir = Path::new(GIT_DIR);
-    let repo = fs::read_dir(dir)?;
-
-    for item in repo {
-        println!("find: {:?}", item?.file_name());
+impl Repository {
+    fn find_root() -> PathBuf {
+        env::current_dir().expect("The currecnt directory is not valid")
     }
 
-    Ok(Repository { path: dir })
-}
+    /// Load the repository form .git folder
+    /// TODO
+    pub fn load() -> Result<Self, RepositoryInitError> {
+        let path = Self::find_root().join(Self::DIRECTORY);
+        let dir = fs::read_dir(&path)?;
 
-/// Initialize the repository
-/// TODO
-pub fn init() -> Result<Repository, RepositoryInitError> {
-    let dir = Path::new(GIT_DIR);
+        for item in dir {
+            println!("find: {:?}", item?.file_name());
+        }
 
-    fs::create_dir(dir)?;
-    refs::init_dir(dir)?;
-    object::init_dir(dir)?;
+        refs::Refs::check_dir_exists(&path);
+        object::Object::check_dir_exists(&path);
 
-    Ok(load()?)
+        Ok(Repository { path })
+    }
+
+    /// Initialize the repository
+    /// TODO
+    pub fn init() -> Result<Self, RepositoryInitError> {
+        let path = Self::find_root().join(Self::DIRECTORY);
+
+        Self::make_dir(&Self::find_root())?;
+        refs::Refs::make_dir(&path)?;
+        object::Object::make_dir(&path)?;
+
+        Ok(Self::load()?)
+    }
 }

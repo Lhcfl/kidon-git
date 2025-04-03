@@ -1,6 +1,6 @@
 use clap::Args;
 
-use crate::services::{self, repo};
+use crate::services::repo::{Repository, RepositoryInitError};
 
 use super::Exec;
 
@@ -9,7 +9,7 @@ pub struct Init {}
 
 impl Exec for Init {
     fn exec(&self) {
-        match services::repo::load() {
+        match Repository::load() {
             Ok(repo) => {
                 println!(
                     "the git repository exists in {}",
@@ -17,7 +17,7 @@ impl Exec for Init {
                 );
                 return;
             }
-            Err(repo::RepositoryInitError::NotInitialized) => {
+            Err(RepositoryInitError::NotInitialized) => {
                 // noting to do
             }
             Err(e) => {
@@ -26,7 +26,7 @@ impl Exec for Init {
             }
         }
 
-        match services::repo::init() {
+        match Repository::init() {
             Ok(repo) => {
                 println!(
                     "successfully initialized git repo in {}",
