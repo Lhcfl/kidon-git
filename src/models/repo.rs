@@ -1,18 +1,18 @@
 //! Repository services
 
+use super::{head, object, refs};
+use crate::traits::DirContainer;
+use crate::{models::head::Head, traits::Store};
 use std::{
     env, fs,
     io::{self, ErrorKind},
     path::PathBuf,
 };
 
-use crate::traits::DirContainer;
-
-use super::{object, refs};
-
 #[derive(Debug)]
 pub struct Repository {
-    pub path: PathBuf,
+    pub root: PathBuf,
+    pub head: Head,
 }
 
 impl DirContainer for Repository {
@@ -63,7 +63,9 @@ impl Repository {
         refs::Refs::check_dir_exists(&path);
         object::Object::check_dir_exists(&path);
 
-        Ok(Repository { path })
+        let head = head::Head::load(&path.join("HEAD"))?;
+
+        Ok(Repository { root: path, head })
     }
 
     /// Initialize the repository
@@ -74,6 +76,12 @@ impl Repository {
         Self::make_dir(&Self::find_root())?;
         refs::Refs::make_dir(&path)?;
         object::Object::make_dir(&path)?;
+
+        let head = head::Head {
+            kind: head::HeadKind::Local,
+            name: "main".to_string(),
+        };
+        head.store(&path)?;
 
         Ok(Self::load()?)
     }

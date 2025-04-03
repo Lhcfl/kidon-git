@@ -1,6 +1,6 @@
 use clap::Args;
 
-use crate::services::repo::{Repository, RepositoryInitError};
+use crate::models::repo::{Repository, RepositoryInitError};
 
 use super::Exec;
 
@@ -13,7 +13,7 @@ impl Exec for Init {
             Ok(repo) => {
                 println!(
                     "the git repository exists in {}",
-                    repo.path.to_string_lossy()
+                    repo.root.to_string_lossy()
                 );
                 return;
             }
@@ -30,7 +30,7 @@ impl Exec for Init {
             Ok(repo) => {
                 println!(
                     "successfully initialized git repo in {}",
-                    repo.path.to_string_lossy()
+                    repo.root.to_string_lossy()
                 );
             }
             Err(e) => {
