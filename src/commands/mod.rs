@@ -1,3 +1,5 @@
+//! Command interface
+
 use clap::Subcommand;
 use enum_dispatch::enum_dispatch;
 
