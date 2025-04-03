@@ -37,3 +37,7 @@ where
         serde_json::from_slice(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
     }
 }
+
+pub trait Sha1Able {
+    fn sha1(&self) -> String;
+}
