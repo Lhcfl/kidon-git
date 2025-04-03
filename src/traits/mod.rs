@@ -3,6 +3,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use serde::{Deserialize, Serialize};
+
 pub trait DirContainer {
     const DIRECTORY: &'static str;
 
@@ -17,24 +19,21 @@ pub trait DirContainer {
     }
 }
 
-pub trait SerDe
-where
-    Self: Sized,
-{
-    fn serialize(&self) -> Vec<u8>;
-    fn deserialize(data: impl Into<Vec<u8>>) -> Result<Self, String>;
-}
-
 pub trait Store
 where
-    Self: SerDe,
+    Self: Serialize,
+    Self: for<'de> Deserialize<'de>,
 {
     fn loaction(&self) -> PathBuf;
     fn store(&self, root: &Path) -> io::Result<()> {
-        fs::write(root.join(self.loaction()), self.serialize())
+        fs::write(
+            root.join(self.loaction()),
+            serde_json::to_string(self)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?,
+        )
     }
     fn load(path: &Path) -> io::Result<Self> {
         let data = fs::read(path)?;
-        Self::deserialize(data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+        serde_json::from_slice(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
     }
 }
