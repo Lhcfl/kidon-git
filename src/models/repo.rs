@@ -79,7 +79,7 @@ impl Repository {
 
         let head = head::Head {
             kind: head::HeadKind::Local,
-            name: "main".to_string(),
+            branch: "main".to_string(),
         };
         head.store(&path)?;
 
