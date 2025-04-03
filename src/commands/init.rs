@@ -17,17 +17,25 @@ impl Exec for Init {
                 );
                 return;
             }
-            Err(repo::RepositoryInitError::NotADirectory) => {
-                println!("the .git folder is not a directory");
+            Err(repo::RepositoryInitError::NotInitialized) => {
+                // noting to do
+            }
+            Err(e) => {
+                println!("error: {e:?}");
                 return;
             }
-            Err(repo::RepositoryInitError::UnknownError(e)) => {
-                println!("error: unknown error: {e}");
-                return;
-            }
-            Err(repo::RepositoryInitError::NotInitialized) => {}
         }
 
-        panic!("init is not implemented")
+        match services::repo::init() {
+            Ok(repo) => {
+                println!(
+                    "successfully initialized git repo in {}",
+                    repo.path.to_string_lossy()
+                );
+            }
+            Err(e) => {
+                println!("error: failed to initialize git repo: {e:?}");
+            }
+        }
     }
 }
