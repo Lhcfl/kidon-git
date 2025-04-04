@@ -1,13 +1,14 @@
+//! Commit object
+
+use super::object::{ObjectSha1, Sha1Able};
 use serde::{Deserialize, Serialize};
 use sha1::Digest;
 use std::time::SystemTime;
 
-use crate::traits::Sha1Able;
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Commit {
-    pub tree: String,
-    pub parent: Option<String>,
+    pub tree: ObjectSha1,
+    pub parent: Option<ObjectSha1>,
     pub timestamp: SystemTime,
     pub message: String,
 }
@@ -41,15 +42,15 @@ mod tests {
     #[test]
     fn test_commit_sha1() {
         let mut commit = Commit {
-            tree: "tree_hash".to_string(),
-            parent: Some("parent_hash".to_string()),
+            tree: "tree_hash".into(),
+            parent: Some("parent_hash".into()),
             timestamp: SystemTime::UNIX_EPOCH,
-            message: "commit message".to_string(),
+            message: "commit message".into(),
         };
 
         let sha1 = commit.sha1();
         assert_eq!(sha1, "97225a7022fe0c8774c228cc13bbe9d0363342b1");
-        commit.tree = "new_tree_hash".to_string();
+        commit.tree = "new_tree_hash".into();
         assert_ne!(sha1, commit.sha1());
     }
 }

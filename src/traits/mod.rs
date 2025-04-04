@@ -3,6 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 
 pub trait DirContainer {
@@ -26,8 +27,13 @@ where
 {
     fn loaction(&self) -> PathBuf;
     fn store(&self, root: &Path) -> io::Result<()> {
+        let path = root.join(self.loaction());
+        if let Some(parent) = path.parent() {
+            // Safely ignores the error if the directory already exists
+            let _ = fs::create_dir_all(parent);
+        }
         fs::write(
-            root.join(self.loaction()),
+            path,
             serde_json::to_string(self)
                 .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?,
         )
@@ -36,8 +42,4 @@ where
         let data = fs::read(path)?;
         serde_json::from_slice(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
     }
-}
-
-pub trait Sha1Able {
-    fn sha1(&self) -> String;
 }

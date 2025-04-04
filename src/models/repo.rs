@@ -1,4 +1,4 @@
-//! Repository services
+//! Repository Struct
 
 use super::{head, object, refs};
 use crate::traits::DirContainer;
