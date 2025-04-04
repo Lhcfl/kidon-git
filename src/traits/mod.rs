@@ -1,9 +1,9 @@
 use std::{
     fs, io,
+    ops::Deref,
     path::{Path, PathBuf},
 };
 
-use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 
 pub trait DirContainer {
@@ -38,8 +38,36 @@ where
                 .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?,
         )
     }
-    fn load(path: &Path) -> io::Result<Self> {
+    fn load(path: &Path) -> io::Result<WithLocation<Self>> {
         let data = fs::read(path)?;
-        serde_json::from_slice(&data).map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+        let inner = serde_json::from_slice(&data)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        Ok(WithLocation {
+            location: path.to_path_buf(),
+            inner,
+        })
+    }
+}
+
+pub struct WithLocation<T: Store> {
+    location: PathBuf,
+    pub inner: T,
+}
+
+impl<T: Store> WithLocation<T> {
+    fn save(&self) -> io::Result<()> {
+        fs::write(
+            &self.location,
+            serde_json::to_string(&self.inner)
+                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?,
+        )
+    }
+}
+
+impl<T: Store> Deref for WithLocation<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
     }
 }

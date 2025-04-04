@@ -4,6 +4,8 @@ use crate::traits::Store;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
+use super::branch::Branch;
+
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum HeadKind {
     Local,
@@ -19,5 +21,18 @@ pub struct Head {
 impl Store for Head {
     fn loaction(&self) -> PathBuf {
         Path::new("HEAD").to_path_buf()
+    }
+}
+
+impl Head {
+    fn get_branch(&self) -> Branch {
+        match &self.kind {
+            HeadKind::Local => Branch {
+                name: self.branch.clone(),
+            },
+            HeadKind::Remote(remote) => Branch {
+                name: format!("{}/{}", remote, self.branch),
+            },
+        }
     }
 }

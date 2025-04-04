@@ -63,7 +63,7 @@ impl Repository {
         refs::Refs::check_dir_exists(&path);
         object::Object::check_dir_exists(&path);
 
-        let head = head::Head::load(&path.join("HEAD"))?;
+        let head = head::Head::load(&path.join("HEAD"))?.inner;
 
         Ok(Repository { root: path, head })
     }
