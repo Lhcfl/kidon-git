@@ -6,7 +6,7 @@ edition = "2024"
 [dependencies]
 anyhow = "1.0.97"
 base16ct = { version = "0.2.0", features = ["alloc"] }
-clap = { version = "4.5.34", features = ["derive", "color", "help", "usage", "suggestions"] }
+clap = { version = "4.5.35", features = ["derive", "color", "help", "usage", "suggestions"] }
 enum_dispatch = "0.3.13"
 nom = "8.0.0"
 serde = { version = "1.0.219", features = ["derive"] }
