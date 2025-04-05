@@ -1,7 +1,7 @@
 //! git objects
 
 use super::{blob::Blob, commit::Commit, tree::Tree};
-use crate::traits::{DirContainer, Store};
+use crate::traits::{Accessable, DirContainer, Store};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -16,6 +16,12 @@ pub trait Sha1Able {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ObjectSha1(String);
+
+impl ObjectSha1 {
+    fn splited<'a>(&'a self) -> (&'a str, &'a str) {
+        (&self.0[0..2], &self.0[2..])
+    }
+}
 
 impl From<String> for ObjectSha1 {
     fn from(value: String) -> Self {
@@ -54,6 +60,13 @@ impl Store for Object {
         let sha1 = self.sha1();
         let dir = sha1.chars().take(2).collect::<String>();
         Path::new(Self::DIRECTORY).join(dir).join(&sha1[2..])
+    }
+}
+
+impl Accessable<ObjectSha1> for Object {
+    fn path_of(by: &ObjectSha1) -> PathBuf {
+        let (car, cdr) = by.splited();
+        Path::new(Self::DIRECTORY).join(car).join(cdr)
     }
 }
 

@@ -1,5 +1,6 @@
 use std::{
     fs, io,
+    marker::PhantomData,
     ops::Deref,
     path::{Path, PathBuf},
 };
@@ -38,36 +39,46 @@ where
                 .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?,
         )
     }
-    fn load(path: &Path) -> io::Result<WithLocation<Self>> {
+    fn load(path: &Path) -> io::Result<Self> {
         let data = fs::read(path)?;
         let inner = serde_json::from_slice(&data)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-        Ok(WithLocation {
-            location: path.to_path_buf(),
-            inner,
-        })
+        Ok(inner)
     }
 }
 
-pub struct WithLocation<T: Store> {
-    location: PathBuf,
-    pub inner: T,
+/// Wraped the accessor to the storeable object
+pub struct Accessor<By, T>
+where
+    T: Store,
+    T: Accessable<By>,
+{
+    by: By,
+    _will_into: PhantomData<T>,
 }
 
-impl<T: Store> WithLocation<T> {
-    fn save(&self) -> io::Result<()> {
-        fs::write(
-            &self.location,
-            serde_json::to_string(&self.inner)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?,
-        )
+/// The trait for the object that can be accessed by the accessor
+pub trait Accessable<By>
+where
+    Self: Store,
+{
+    /// Get an accessor of the object
+    fn accessor(by: impl Into<By>) -> Accessor<By, Self> {
+        Accessor {
+            by: by.into(),
+            _will_into: PhantomData,
+        }
     }
+
+    fn path_of(by: &By) -> PathBuf;
 }
 
-impl<T: Store> Deref for WithLocation<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
+impl<By, T> Accessor<By, T>
+where
+    T: Store,
+    T: Accessable<By>,
+{
+    pub fn path(&self) -> PathBuf {
+        T::path_of(&self.by)
     }
 }
