@@ -6,7 +6,7 @@ use super::Exec;
 pub struct Merge {}
 
 impl Exec for Merge {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("merge is not implemented")
     }
 }

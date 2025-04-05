@@ -8,7 +8,7 @@ pub struct Remove {
 }
 
 impl Exec for Remove {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("rm is not implemented")
     }
 }

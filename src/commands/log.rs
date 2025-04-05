@@ -6,7 +6,7 @@ use super::Exec;
 pub struct Log {}
 
 impl Exec for Log {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("init is not implemented")
     }
 }

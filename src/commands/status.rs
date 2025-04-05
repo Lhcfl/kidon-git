@@ -6,7 +6,7 @@ use super::Exec;
 pub struct Status {}
 
 impl Exec for Status {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("init is not implemented")
     }
 }

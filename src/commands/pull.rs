@@ -6,7 +6,7 @@ use super::Exec;
 pub struct Pull {}
 
 impl Exec for Pull {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("init is not implemented")
     }
 }

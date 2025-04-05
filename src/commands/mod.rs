@@ -19,7 +19,7 @@ mod status;
 #[enum_dispatch]
 pub trait Exec {
     /// execute the command
-    fn exec(&self);
+    fn exec(&self) -> anyhow::Result<()>;
 }
 
 #[derive(Debug, Subcommand)]

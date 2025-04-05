@@ -1,6 +1,6 @@
 //! Branch of the repository
 use super::object::ObjectSha1;
-use crate::traits::{Accessable, Store};
+use crate::traits::{Accessable, DirContainer, Store};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

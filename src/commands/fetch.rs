@@ -6,7 +6,7 @@ use super::Exec;
 pub struct Fetch {}
 
 impl Exec for Fetch {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("init is not implemented")
     }
 }

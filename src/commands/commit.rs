@@ -14,7 +14,7 @@ pub struct Commit {
 }
 
 impl Exec for Commit {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("commit is not implemented")
     }
 }

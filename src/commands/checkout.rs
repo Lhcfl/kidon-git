@@ -9,7 +9,7 @@ pub struct Checkout {
 }
 
 impl Exec for Checkout {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("checkout is not implemented")
     }
 }

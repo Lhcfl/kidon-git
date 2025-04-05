@@ -8,21 +8,21 @@ use super::Exec;
 pub struct Init {}
 
 impl Exec for Init {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         match Repository::load() {
             Ok(repo) => {
                 println!(
                     "the git repository exists in {}",
                     repo.root.to_string_lossy()
                 );
-                return;
+                return Ok(());
             }
             Err(RepositoryInitError::NotInitialized) => {
                 // noting to do
             }
             Err(e) => {
                 println!("error: {e:?}");
-                return;
+                Err(e)?;
             }
         }
 
@@ -32,9 +32,11 @@ impl Exec for Init {
                     "successfully initialized git repo in {}",
                     repo.root.to_string_lossy()
                 );
+                Ok(())
             }
             Err(e) => {
                 println!("error: failed to initialize git repo: {e:?}");
+                Err(e.into())
             }
         }
     }

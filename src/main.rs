@@ -13,10 +13,10 @@ struct Args {
     command: commands::Commands,
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     println!("Args: {:?}", args);
     args.command.show();
-    args.command.exec();
+    args.command.exec()
 }

@@ -8,7 +8,7 @@ pub struct Add {
 }
 
 impl Exec for Add {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("add is not implemented")
     }
 }

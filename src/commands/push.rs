@@ -6,7 +6,7 @@ use super::Exec;
 pub struct Push {}
 
 impl Exec for Push {
-    fn exec(&self) {
+    fn exec(&self) -> anyhow::Result<()> {
         panic!("init is not implemented")
     }
 }

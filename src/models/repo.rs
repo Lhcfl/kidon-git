@@ -109,6 +109,22 @@ impl From<io::Error> for RepositoryInitError {
     }
 }
 
+impl From<RepositoryInitError> for anyhow::Error {
+    fn from(value: RepositoryInitError) -> Self {
+        match value {
+            RepositoryInitError::NotInitialized => {
+                anyhow::anyhow!("The repository is not initialized")
+            }
+            RepositoryInitError::BadGitRepositoryDir => {
+                anyhow::anyhow!("The dir is not a git repository, or is broken")
+            }
+            RepositoryInitError::NotADirectory(e) => anyhow::anyhow!(e),
+            RepositoryInitError::AlreadyExists(e) => anyhow::anyhow!(e),
+            RepositoryInitError::UnknownError(e) => anyhow::anyhow!(e),
+        }
+    }
+}
+
 impl Repository {
     pub fn wrap<T>(&self, inner: T) -> WithRepoPath<T> {
         WithRepoPath {
@@ -125,11 +141,7 @@ impl Repository {
     /// TODO
     pub fn load() -> Result<Self, RepositoryInitError> {
         let path = Self::find_root().join(Self::DIRECTORY);
-        let dir = fs::read_dir(&path)?;
-
-        for item in dir {
-            println!("find: {:?}", item?.file_name());
-        }
+        let _ = fs::read_dir(&path)?;
 
         refs::Refs::check_dir_exists(&path);
         object::Object::check_dir_exists(&path);
