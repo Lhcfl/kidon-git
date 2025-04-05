@@ -1,10 +1,10 @@
 //! A pointer to the currently active branch of the context (repository, remote, etc.)
 
-use crate::traits::Store;
+use crate::traits::{Accessable, Accessor, Store};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
-use super::branch::Branch;
+use super::{branch::Branch, repo::WithRepoPath};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum HeadKind {
@@ -15,7 +15,7 @@ pub enum HeadKind {
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Head {
     pub kind: HeadKind,
-    pub branch: String,
+    pub branch_name: String,
 }
 
 impl Store for Head {
@@ -24,15 +24,9 @@ impl Store for Head {
     }
 }
 
-impl Head {
-    fn get_branch(&self) -> Branch {
-        match &self.kind {
-            HeadKind::Local => Branch {
-                name: self.branch.clone(),
-            },
-            HeadKind::Remote(remote) => Branch {
-                name: format!("{}/{}", remote, self.branch),
-            },
-        }
+impl<'r> WithRepoPath<'r, Head> {
+    /// Get the branch of the head
+    pub fn branch(&self) -> WithRepoPath<'r, Accessor<String, Branch>> {
+        self.wrap(Branch::accessor(&self.branch_name))
     }
 }

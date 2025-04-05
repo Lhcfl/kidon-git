@@ -1,5 +1,6 @@
 //! Repository Struct
 
+use super::branch::Branch;
 use super::{head, object, refs};
 use crate::traits::{Accessable, Accessor, DirContainer};
 use crate::{models::head::Head, traits::Store};
@@ -27,12 +28,22 @@ pub struct Repository {
 /// ```
 ///
 /// ```rust
-/// let obj = repo.wrapped(Object::accessor("some sha1".into())); // WithRepoPath<Accessor<ObjectSha1, Object>>
+/// let obj = repo.wrap(Object::accessor("some sha1".into())); // WithRepoPath<Accessor<ObjectSha1, Object>>
 /// obj.load(); // Load the object from the repository
 /// ```
 pub struct WithRepoPath<'r, T> {
     root: &'r PathBuf,
     inner: T,
+}
+
+impl<'r, T> WithRepoPath<'r, T> {
+    /// Wrap the storeable object with the repository path
+    pub fn wrap<To>(&self, inner: To) -> WithRepoPath<'r, To> {
+        WithRepoPath {
+            root: self.root,
+            inner,
+        }
+    }
 }
 
 impl<T> Deref for WithRepoPath<'_, T> {
@@ -99,7 +110,7 @@ impl From<io::Error> for RepositoryInitError {
 }
 
 impl Repository {
-    pub fn wrapped<T>(&self, inner: T) -> WithRepoPath<T> {
+    pub fn wrap<T>(&self, inner: T) -> WithRepoPath<T> {
         WithRepoPath {
             root: &self.root,
             inner,
@@ -142,14 +153,21 @@ impl Repository {
 
         let head = head::Head {
             kind: head::HeadKind::Local,
-            branch: "main".to_string(),
+            branch_name: "main".to_string(),
         };
         head.store(&path)?;
+
+        let main_branch = Branch {
+            remote: None,
+            name: "main".to_string(),
+            head: None,
+        };
+        main_branch.store(&path)?;
 
         Ok(Self::load()?)
     }
 
     pub fn head(&self) -> WithRepoPath<&Head> {
-        self.wrapped(&self.head_)
+        self.wrap(&self.head_)
     }
 }
