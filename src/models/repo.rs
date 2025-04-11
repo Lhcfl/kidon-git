@@ -41,6 +41,10 @@ pub struct WithRepoPath<'r, T> {
 }
 
 impl<'r, T> WithRepoPath<'r, T> {
+    pub fn new(root: &'r PathBuf, inner: T) -> Self {
+        WithRepoPath { root, inner }
+    }
+
     /// Wrap the storeable object with the repository path
     pub fn wrap<To>(&self, inner: To) -> WithRepoPath<'r, To> {
         WithRepoPath {
@@ -71,6 +75,15 @@ impl<T> Deref for WithRepoPath<'_, T> {
 impl<T> DerefMut for WithRepoPath<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.inner
+    }
+}
+
+impl<T> Display for WithRepoPath<'_, T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.inner)
     }
 }
 

@@ -4,9 +4,9 @@
 use super::object::{ObjectSha1, Sha1Able};
 use bincode::{Decode, Encode};
 use sha1::Digest;
-use std::fmt::Display;
+use std::{collections::HashMap, fmt::Display};
 
-#[derive(Debug, Clone, PartialEq, Eq, Decode, Encode)]
+#[derive(Debug, Clone, PartialEq, Eq, Decode, Encode, Hash)]
 pub enum TreeLineKind {
     File,
     Executable,
@@ -25,13 +25,41 @@ impl Display for TreeLineKind {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Decode, Encode)]
+#[derive(Debug, Clone, PartialEq, Eq, Decode, Encode, Hash)]
 pub struct TreeLine {
     pub kind: TreeLineKind,
     pub name: String,
     pub sha1: ObjectSha1,
 }
 
+impl Display for TreeLine {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {}    {}", self.kind, self.sha1, self.name)
+    }
+}
+
+/// A normal tree is like a folder in a file system.
+/// for example a tree can be
+///
+/// ```txt
+/// 100644 blob 0c12d336241a22c6b954d6fafdc998b6d9fb6e17    .gitignore
+/// 040000 tree 90627a7a454193542b63eabb58a5e4ca28757313    .vscode
+/// 100644 blob 44e34a5a2ce18b5b2adf49e31830279372d72f59    Cargo.lock
+/// 100644 blob e3c210d6b009a9f124374249285ed150afc810e5    Cargo.toml
+/// 100644 blob fbc9698bf694bdf8236057cc7c3a44d81d17dab5    README.md
+/// 040000 tree 0e7c7eacd07aae9bfe41f3a88a9dab8b6401a5c9    src
+/// ```
+///
+/// and you can recursively get the tree of `.vscode` by accessing
+/// [ObjectSha1] `90627a7a454193542b63eabb58a5e4ca28757313`
+///
+/// ```txt
+/// 100644 blob 770d907549efbbdce816734005b3ebc5364b3208    settings.json
+/// ```
+///
+/// then you can get the content of `settings.json` by accessing
+/// [ObjectSha1] `770d907549efbbdce816734005b3ebc5364b3208`
+/// which is a [Blob](super::blob::Blob)
 #[derive(Debug, Clone, Decode, Encode)]
 pub struct Tree {
     pub objects: Vec<TreeLine>,
@@ -46,6 +74,34 @@ impl Sha1Able for Tree {
             hasher.update(line.sha1.as_bytes());
         }
         base16ct::lower::encode_string(&hasher.finalize())
+    }
+}
+
+impl Display for Tree {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for line in &self.objects {
+            writeln!(f, "{line}")?;
+        }
+        Ok(())
+    }
+}
+
+impl From<HashMap<String, TreeLine>> for Tree {
+    fn from(value: HashMap<String, TreeLine>) -> Self {
+        let mut ret = Tree {
+            objects: value.into_iter().map(|(_, v)| v).collect(),
+        };
+        ret.objects.sort_by(|a, b| a.name.cmp(&b.name));
+        ret
+    }
+}
+
+impl Tree {
+    pub fn into_map(self) -> HashMap<String, TreeLine> {
+        self.objects
+            .into_iter()
+            .map(|line| (line.name.clone(), line))
+            .collect()
     }
 }
 

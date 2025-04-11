@@ -1,11 +1,14 @@
 //! Commit object
 
+use std::fmt::Display;
+
 use super::object::{ObjectSha1, Sha1Able};
 use bincode::{Decode, Encode};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use sha1::Digest;
 
-#[derive(Debug, Clone, PartialEq, Eq, Encode, Decode)]
+#[derive(Debug, Clone, PartialEq, Eq, Encode, Decode, Serialize, Deserialize)]
 pub struct Commit {
     /// Commit tree
     pub tree: ObjectSha1,
@@ -21,6 +24,19 @@ pub struct Commit {
 impl Commit {
     pub fn time(&self) -> DateTime<Utc> {
         DateTime::from_timestamp(self.timestamp.0, self.timestamp.1).expect("Invalid timestamp")
+    }
+}
+
+impl Display for Commit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match serde_json::to_string_pretty(self) {
+            Ok(json) => {
+                write!(f, "{}", json)
+            }
+            Err(e) => {
+                write!(f, "unexpected: failed to serialize the commit: {}", e)
+            }
+        }
     }
 }
 

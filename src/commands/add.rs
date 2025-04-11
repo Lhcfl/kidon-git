@@ -1,9 +1,12 @@
-use std::{env, path::Path};
+use std::env;
 
 use clap::Args;
 use colored::Colorize;
 
-use crate::{models::repo::Repository, services::stage::StageService};
+use crate::{
+    models::repo::Repository,
+    services::stage::{StageMuter, StageService},
+};
 
 use super::Exec;
 
@@ -23,14 +26,14 @@ impl Exec for Add {
             return Ok(());
         }
 
-        let mut stage = repo.stage()?;
+        let mut stage = repo.stage()?.into_muter();
 
         for path in &self.paths {
             let path = env::current_dir()?.join(path);
             stage.add_path(&path)?;
         }
 
-        stage.save()?;
+        stage.freeze().save()?;
 
         Ok(())
     }

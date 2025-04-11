@@ -1,6 +1,6 @@
 //! Blob represents a binary large object (BLOB) in a Git-like system.
 
-use std::borrow::Cow;
+use std::{borrow::Cow, fmt::Display};
 
 use super::object::Sha1Able;
 use bincode::{Decode, Encode};
@@ -49,6 +49,12 @@ impl Blob {
             Blob::Binary(data) => String::from_utf8_lossy(data),
             Blob::Text(text) => text.into(),
         }
+    }
+}
+
+impl Display for Blob {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_string())
     }
 }
 

@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use std::{
     fmt::Display,
     fs,
+    mem::transmute,
     ops::Deref,
     path::{Path, PathBuf},
 };
@@ -18,7 +19,8 @@ pub trait Sha1Able {
     fn sha1(&self) -> String;
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Decode, Encode, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Decode, Encode, Serialize, Deserialize, Hash)]
+#[repr(transparent)]
 pub struct ObjectSha1(String);
 
 impl ObjectSha1 {
@@ -36,6 +38,14 @@ impl From<String> for ObjectSha1 {
 impl From<&str> for ObjectSha1 {
     fn from(value: &str) -> Self {
         ObjectSha1(value.to_string())
+    }
+}
+
+impl From<&String> for &ObjectSha1 {
+    fn from(value: &String) -> Self {
+        // SAFETY: This is safe because ObjectSha1 is repr(transparent) over String
+        // so the memory layout is the same.
+        unsafe { transmute(value) }
     }
 }
 
@@ -104,6 +114,16 @@ impl Accessable<ObjectSha1> for Object {
     fn path_of(by: &ObjectSha1) -> PathBuf {
         let (car, cdr) = by.splited();
         Path::new(Self::DIRECTORY).join(car).join(cdr)
+    }
+}
+
+impl Display for Object {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Object::Blob(blob) => write!(f, "{}", blob),
+            Object::Tree(tree) => write!(f, "{}", tree),
+            Object::Commit(commit) => write!(f, "{}", commit),
+        }
     }
 }
 

@@ -5,6 +5,7 @@ use enum_dispatch::enum_dispatch;
 
 mod add;
 mod branch;
+mod cat_file;
 mod checkout;
 mod commit;
 mod fetch;
@@ -50,6 +51,8 @@ pub enum Commands {
     Pull(pull::Pull),
     /// Update remote refs along with associated objects
     Push(push::Push),
+    /// (For debug) Display information about a object
+    CatFile(cat_file::CatFile),
 }
 
 impl Commands {
