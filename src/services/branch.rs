@@ -4,11 +4,11 @@ use crate::{
 };
 use std::io;
 
-pub trait ListBranch {
+pub trait BranchService {
     fn list_branch(&self) -> io::Result<Vec<String>>;
 }
 
-impl ListBranch for Repository {
+impl BranchService for Repository {
     fn list_branch(&self) -> io::Result<Vec<String>> {
         let mut branches = Vec::new();
         for entry in std::fs::read_dir(self.root.join(Branch::DIRECTORY).join("heads"))? {
