@@ -6,7 +6,7 @@ use super::{branch, head, object};
 use crate::traits::{Accessable, Accessor, DirContainer};
 use crate::{models::head::Head, traits::Store};
 use std::fmt::Display;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::path::Path;
 use std::{
     env, fs,
@@ -36,7 +36,7 @@ pub struct Repository {
 /// obj.load(); // Load the object from the repository
 /// ```
 pub struct WithRepoPath<'r, T> {
-    root: &'r PathBuf,
+    pub root: &'r PathBuf,
     inner: T,
 }
 
@@ -52,6 +52,12 @@ impl<'r, T> WithRepoPath<'r, T> {
     pub fn unwrap(self) -> T {
         self.inner
     }
+
+    pub fn working_dir(&self) -> &Path {
+        self.root
+            .parent()
+            .expect(".git directory should never be the root")
+    }
 }
 
 impl<T> Deref for WithRepoPath<'_, T> {
@@ -59,6 +65,12 @@ impl<T> Deref for WithRepoPath<'_, T> {
 
     fn deref(&self) -> &Self::Target {
         &self.inner
+    }
+}
+
+impl<T> DerefMut for WithRepoPath<'_, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.inner
     }
 }
 

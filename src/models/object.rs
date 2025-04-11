@@ -87,7 +87,7 @@ impl Store for Object {
             // Safely ignores the error if the directory already exists
             let _ = std::fs::create_dir_all(parent);
         }
-        let mut dst = fs::File::open(path)?;
+        let mut dst = fs::File::create(path)?;
         bincode::encode_into_std_write(self, &mut dst, bincode::config::standard())
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
         Ok(())

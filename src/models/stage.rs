@@ -5,24 +5,14 @@ use super::tree::Tree;
 use crate::traits::Store;
 use bincode::{Decode, Encode};
 use std::{
-    fs,
+    fs, io,
     ops::{Deref, DerefMut},
-    path::Path,
+    path::{Path, PathBuf},
 };
 
 /// Staging area is actually a special [[Tree]]
 #[derive(Encode, Decode)]
 pub struct Stage(Tree);
-
-impl Stage {
-    pub const LOCATION: &str = "index";
-
-    pub fn empty() -> Self {
-        Stage(Tree {
-            objects: Vec::new(),
-        })
-    }
-}
 
 impl Deref for Stage {
     type Target = Tree;
@@ -39,26 +29,36 @@ impl DerefMut for Stage {
 }
 
 impl Store for Stage {
-    fn loaction(&self) -> std::path::PathBuf {
+    fn loaction(&self) -> PathBuf {
         Path::new(Self::LOCATION).to_path_buf()
     }
 
-    fn store(&self, root: &std::path::Path) -> std::io::Result<()> {
+    fn store(&self, root: &Path) -> io::Result<()> {
         let path = root.join(Self::LOCATION);
         if let Some(parent) = path.parent() {
             // Safely ignores the error if the directory already exists
             let _ = std::fs::create_dir_all(parent);
         }
-        let mut dst = fs::File::open(path)?;
+        let mut dst = fs::File::create(path)?;
         bincode::encode_into_std_write(self, &mut dst, bincode::config::standard())
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         Ok(())
     }
 
-    fn load(path: &std::path::Path) -> std::io::Result<Self> {
+    fn load(path: &Path) -> io::Result<Self> {
         let mut src = fs::File::open(path)?;
         let item = bincode::decode_from_std_read(&mut src, bincode::config::standard())
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
         Ok(item)
+    }
+}
+
+impl Stage {
+    pub const LOCATION: &str = "index";
+
+    pub fn empty() -> Self {
+        Stage(Tree {
+            objects: Vec::new(),
+        })
     }
 }
