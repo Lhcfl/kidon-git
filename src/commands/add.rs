@@ -5,7 +5,7 @@ use colored::Colorize;
 
 use crate::{
     models::repo::Repository,
-    services::stage::{StageMuter, StageService},
+    services::stage::StageService,
 };
 
 use super::Exec;

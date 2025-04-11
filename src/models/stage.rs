@@ -1,14 +1,13 @@
 //! stage files of the repo
 //! The stage files are used to store the changes that are not yet committed.
 
-use super::tree::{Tree, TreeLine};
+use super::tree::Tree;
 use crate::traits::Store;
 use bincode::{Decode, Encode};
 use std::{
-    collections::{HashMap, HashSet},
     fmt::Display,
     fs, io,
-    ops::{Deref, DerefMut},
+    ops::Deref,
     path::{Path, PathBuf},
 };
 

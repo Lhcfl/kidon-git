@@ -89,7 +89,7 @@ impl Display for Tree {
 impl From<HashMap<String, TreeLine>> for Tree {
     fn from(value: HashMap<String, TreeLine>) -> Self {
         let mut ret = Tree {
-            objects: value.into_iter().map(|(_, v)| v).collect(),
+            objects: value.into_values().collect(),
         };
         ret.objects.sort_by(|a, b| a.name.cmp(&b.name));
         ret
