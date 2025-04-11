@@ -39,7 +39,7 @@ impl Exec for Log {
             println!("{} {}", "commit".yellow(), sha1);
             println!(
                 "Date:   {}",
-                commit.timestamp.naive_local().format("%Y-%m-%d %H:%M:%S")
+                commit.time().naive_local().format("%Y-%m-%d %H:%M:%S")
             );
             commit
                 .message

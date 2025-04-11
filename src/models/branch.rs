@@ -1,6 +1,9 @@
 //! Branch of the repository
 use super::object::ObjectSha1;
-use crate::traits::{Accessable, DirContainer, Store};
+use crate::{
+    serde_json_store,
+    traits::{Accessable, DirContainer, Store},
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -30,6 +33,7 @@ impl Store for Branch {
             std::path::PathBuf::from(format!("refs/heads/{}", self.name))
         }
     }
+    serde_json_store!();
 }
 
 impl DirContainer for Branch {

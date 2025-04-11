@@ -2,10 +2,12 @@
 
 use super::{blob::Blob, commit::Commit, tree::Tree};
 use crate::traits::{Accessable, DirContainer, Store};
+use bincode::{Decode, Encode};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use std::{
     fmt::Display,
+    fs,
     ops::Deref,
     path::{Path, PathBuf},
 };
@@ -16,7 +18,7 @@ pub trait Sha1Able {
     fn sha1(&self) -> String;
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Decode, Encode, Serialize, Deserialize)]
 pub struct ObjectSha1(String);
 
 impl ObjectSha1 {
@@ -51,7 +53,7 @@ impl Display for ObjectSha1 {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Decode, Encode)]
 #[enum_dispatch(Sha1Able)]
 pub enum Object {
     Blob(Blob),
@@ -79,6 +81,23 @@ impl Store for Object {
         let dir = sha1.chars().take(2).collect::<String>();
         Path::new(Self::DIRECTORY).join(dir).join(&sha1[2..])
     }
+    fn store(&self, root: &std::path::Path) -> std::io::Result<()> {
+        let path = root.join(self.loaction());
+        if let Some(parent) = path.parent() {
+            // Safely ignores the error if the directory already exists
+            let _ = std::fs::create_dir_all(parent);
+        }
+        let mut dst = fs::File::open(path)?;
+        bincode::encode_into_std_write(self, &mut dst, bincode::config::standard())
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+        Ok(())
+    }
+    fn load(path: &std::path::Path) -> std::io::Result<Self> {
+        let mut src = fs::File::open(path)?;
+        let item = bincode::decode_from_std_read(&mut src, bincode::config::standard())
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+        Ok(item)
+    }
 }
 
 impl Accessable<ObjectSha1> for Object {
@@ -90,8 +109,6 @@ impl Accessable<ObjectSha1> for Object {
 
 #[cfg(test)]
 mod test {
-    use serde_json::json;
-
     use crate::models::{object::Sha1Able, tree::TreeLine, tree::TreeLineKind};
 
     use super::{Blob, Commit, Object, Tree};
@@ -104,7 +121,7 @@ mod test {
         let commit = Commit {
             tree: "tree_hash".into(),
             parent: Some("parent_hash".into()),
-            timestamp: std::time::SystemTime::UNIX_EPOCH.into(),
+            timestamp: (0, 0),
             message: "commit message".to_string(),
         };
         assert_eq!(commit.sha1(), Object::from(commit).sha1());
@@ -117,63 +134,5 @@ mod test {
             }],
         };
         assert_eq!(tree.sha1(), Object::from(tree).sha1());
-    }
-
-    #[test]
-    fn object_serialize() {
-        let blob = Blob::from("hello world");
-        let object = Object::from(blob.clone());
-        let serialized = serde_json::to_string(&object).unwrap();
-        assert_eq!(
-            serialized,
-            json!({
-                "Blob": "hello world"
-            })
-            .to_string()
-        );
-
-        let commit = Commit {
-            tree: "tree_hash".into(),
-            parent: Some("parent_hash".into()),
-            timestamp: std::time::SystemTime::UNIX_EPOCH.into(),
-            message: "commit message".to_string(),
-        };
-        let object = Object::from(commit.clone());
-        let serialized = serde_json::to_value(object).unwrap();
-        assert_eq!(
-            serialized,
-            json!({
-                "Commit": {
-                    "tree": "tree_hash",
-                    "parent": "parent_hash",
-                    "timestamp": "1970-01-01T00:00:00Z",
-                    "message": "commit message",
-                }
-            })
-        );
-
-        let tree = Tree {
-            objects: vec![TreeLine {
-                kind: TreeLineKind::File,
-                name: "file.txt".to_string(),
-                sha1: "file_sha1".into(),
-            }],
-        };
-        let object = Object::from(tree.clone());
-        let serialized = serde_json::to_value(object).unwrap();
-        assert_eq!(
-            serialized,
-            json!({
-                "Tree": {
-                    "objects": [
-                        {
-                            "kind": "File",
-                            "name": "file.txt",
-                            "sha1": "file_sha1"
-                        }
-                    ]
-                }
-            })
-        );
     }
 }

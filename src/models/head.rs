@@ -1,6 +1,9 @@
 //! A pointer to the currently active branch of the context (repository, remote, etc.)
 
-use crate::traits::{Accessable, Accessor, Store};
+use crate::{
+    serde_json_store,
+    traits::{Accessable, Accessor, Store},
+};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -22,6 +25,7 @@ impl Store for Head {
     fn loaction(&self) -> PathBuf {
         Path::new("HEAD").to_path_buf()
     }
+    serde_json_store!();
 }
 
 impl<'r> WithRepoPath<'r, &Head> {

@@ -6,4 +6,5 @@ pub mod commit;
 pub mod head;
 pub mod object;
 pub mod repo;
+pub mod stage;
 pub mod tree;

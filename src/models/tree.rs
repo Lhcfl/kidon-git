@@ -2,11 +2,12 @@
 //! It contains a list of TreeLine objects, each representing a blob or another tree.
 
 use super::object::{ObjectSha1, Sha1Able};
+use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 use sha1::Digest;
 use std::fmt::Display;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Decode, Encode)]
 pub enum TreeLineKind {
     File,
     Executable,
@@ -25,14 +26,14 @@ impl Display for TreeLineKind {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Decode, Encode)]
 pub struct TreeLine {
     pub kind: TreeLineKind,
     pub name: String,
     pub sha1: ObjectSha1,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Decode, Encode)]
 pub struct Tree {
     pub objects: Vec<TreeLine>,
 }

@@ -1,3 +1,4 @@
+use core::panic;
 use std::{
     fs, io,
     marker::PhantomData,
@@ -22,28 +23,35 @@ pub trait DirContainer {
 
 pub trait Store
 where
-    Self: Serialize,
-    Self: for<'de> Deserialize<'de>,
+    Self: Sized,
 {
     fn loaction(&self) -> PathBuf;
-    fn store(&self, root: &Path) -> io::Result<()> {
-        let path = root.join(self.loaction());
-        if let Some(parent) = path.parent() {
-            // Safely ignores the error if the directory already exists
-            let _ = fs::create_dir_all(parent);
+    fn store(&self, file: &Path) -> io::Result<()>;
+    fn load(file: &Path) -> io::Result<Self>;
+}
+
+#[macro_export]
+macro_rules! serde_json_store {
+    () => {
+        fn store(&self, root: &std::path::Path) -> std::io::Result<()> {
+            let path = root.join(self.loaction());
+            if let Some(parent) = path.parent() {
+                // Safely ignores the error if the directory already exists
+                let _ = std::fs::create_dir_all(parent);
+            }
+            std::fs::write(
+                path,
+                serde_json::to_string(self)
+                    .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?,
+            )
         }
-        fs::write(
-            path,
-            serde_json::to_string(self)
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?,
-        )
-    }
-    fn load(path: &Path) -> io::Result<Self> {
-        let data = fs::read(path)?;
-        let inner = serde_json::from_slice(&data)
-            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
-        Ok(inner)
-    }
+        fn load(path: &std::path::Path) -> std::io::Result<Self> {
+            let data = std::fs::read(path)?;
+            let inner = serde_json::from_slice(&data)
+                .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
+            Ok(inner)
+        }
+    };
 }
 
 /// Wraped the accessor to the storeable object
