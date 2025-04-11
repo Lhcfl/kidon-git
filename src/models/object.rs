@@ -22,7 +22,7 @@ pub trait Sha1Able {
 pub struct ObjectSha1(String);
 
 impl ObjectSha1 {
-    fn splited<'a>(&'a self) -> (&'a str, &'a str) {
+    fn splited(&self) -> (&str, &str) {
         (&self.0[0..2], &self.0[2..])
     }
 }

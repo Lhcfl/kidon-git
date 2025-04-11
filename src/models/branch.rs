@@ -18,7 +18,7 @@ impl Accessable<String> for Branch {
         let mut iter = by.split('/');
         let first = iter.next().expect("branch name is empty");
         if let Some(branch) = iter.next() {
-            return std::path::PathBuf::from(format!("refs/remotes/{}/{}", first, branch));
+            std::path::PathBuf::from(format!("refs/remotes/{}/{}", first, branch))
         } else {
             std::path::PathBuf::from(format!("refs/heads/{}", first))
         }

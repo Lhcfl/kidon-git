@@ -68,11 +68,11 @@ where
 {
     /// Save the storeable object to the repository
     pub fn save(&self) -> io::Result<()> {
-        self.store(&self.root)
+        self.store(self.root)
     }
 }
 
-impl<'r, 'a, By, T> WithRepoPath<'r, Accessor<'a, By, T>>
+impl<'r, By, T> WithRepoPath<'r, Accessor<'_, By, T>>
 where
     T: Accessable<By>,
     T: Store,
@@ -208,7 +208,7 @@ impl Repository {
         };
         main_branch.store(&path)?;
 
-        Ok(Self::load()?)
+        Self::load()
     }
 
     /// get the head of the repository

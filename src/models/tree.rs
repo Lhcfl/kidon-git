@@ -3,7 +3,6 @@
 
 use super::object::{ObjectSha1, Sha1Able};
 use bincode::{Decode, Encode};
-use serde::{Deserialize, Serialize};
 use sha1::Digest;
 use std::fmt::Display;
 

@@ -1,11 +1,9 @@
-use core::panic;
 use std::{
-    fs, io,
+    io,
     marker::PhantomData,
     path::{Path, PathBuf},
 };
 
-use serde::{Deserialize, Serialize};
 
 pub trait DirContainer {
     const DIRECTORY: &'static str;
@@ -80,7 +78,7 @@ where
     fn path_of(by: &By) -> PathBuf;
 }
 
-impl<'a, By, T> Accessor<'a, By, T>
+impl<By, T> Accessor<'_, By, T>
 where
     T: Store,
     T: Accessable<By>,

@@ -11,7 +11,7 @@ pub struct Add {
 
 impl Exec for Add {
     fn exec(&self) -> anyhow::Result<()> {
-        if self.paths.len() == 0 {
+        if self.paths.is_empty() {
             println!("Nothing specified, nothing added.");
             println!("{}", "hint: Maybe you wanted to say 'git add .'?".yellow());
             return Ok(());
