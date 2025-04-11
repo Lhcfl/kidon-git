@@ -15,6 +15,8 @@ pub struct Commit {
 
 impl Exec for Commit {
     fn exec(&self) -> anyhow::Result<()> {
+        // @leonard 请（）
+        // 自行解决如何把指定文件夹 dump 到一个 tree（）
         panic!("commit is not implemented")
     }
 }
