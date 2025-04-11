@@ -6,6 +6,8 @@ mod traits;
 use clap::Parser;
 use colored::Colorize;
 use commands::Exec;
+use log::{debug, trace};
+use simple_logger::SimpleLogger;
 
 #[derive(Debug, Parser)]
 #[command(version)]
@@ -17,8 +19,14 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    println!("Args: {:?}", args);
-    args.command.show();
+    SimpleLogger::new()
+        .with_colors(true)
+        .without_timestamps()
+        .init()
+        .unwrap();
+
+    debug!("Args: {:?}", args);
+    debug!("Command: {:?}", args.command);
 
     if let Err(e) = args.command.exec() {
         println!("{}: {e}", "error".red());

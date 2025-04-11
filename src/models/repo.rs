@@ -1,6 +1,7 @@
 //! Repository Struct
 
 use super::branch::Branch;
+use super::ignores::Ignores;
 use super::stage::Stage;
 use super::{branch, head, object};
 use crate::traits::{Accessable, Accessor, DirContainer};
@@ -18,6 +19,7 @@ use std::{
 pub struct Repository {
     /// .git dir for the repository
     pub root: PathBuf,
+    pub ignores: Ignores,
     head_: Head,
 }
 
@@ -36,19 +38,19 @@ pub struct Repository {
 /// obj.load(); // Load the object from the repository
 /// ```
 pub struct WithRepoPath<'r, T> {
-    pub root: &'r PathBuf,
+    pub repo: &'r Repository,
     inner: T,
 }
 
 impl<'r, T> WithRepoPath<'r, T> {
-    pub fn new(root: &'r PathBuf, inner: T) -> Self {
-        WithRepoPath { root, inner }
+    pub fn new(repo: &'r Repository, inner: T) -> Self {
+        WithRepoPath { repo, inner }
     }
 
     /// Wrap the storeable object with the repository path
     pub fn wrap<To>(&self, inner: To) -> WithRepoPath<'r, To> {
         WithRepoPath {
-            root: self.root,
+            repo: self.repo,
             inner,
         }
     }
@@ -57,10 +59,14 @@ impl<'r, T> WithRepoPath<'r, T> {
         self.inner
     }
 
-    pub fn working_dir(&self) -> &Path {
-        self.root
-            .parent()
-            .expect(".git directory should never be the root")
+    pub fn map<F, U>(self, f: F) -> WithRepoPath<'r, U>
+    where
+        F: FnOnce(T) -> U,
+    {
+        WithRepoPath {
+            repo: self.repo,
+            inner: f(self.inner),
+        }
     }
 }
 
@@ -93,7 +99,7 @@ where
 {
     /// Save the storeable object to the repository
     pub fn save(&self) -> io::Result<()> {
-        self.store(self.root)
+        self.store(&self.repo.root)
     }
 }
 
@@ -104,9 +110,9 @@ where
 {
     /// Load the storeable object from the repository
     pub fn load(&self) -> io::Result<WithRepoPath<'r, T>> {
-        let inner = T::load(&self.root.join(self.inner.path()))?;
+        let inner = T::load(&self.repo.root.join(self.inner.path()))?;
         Ok(WithRepoPath {
-            root: self.root,
+            repo: self.repo,
             inner,
         })
     }
@@ -179,10 +185,7 @@ impl From<RepositoryInitError> for anyhow::Error {
 
 impl Repository {
     pub fn wrap<T>(&self, inner: T) -> WithRepoPath<T> {
-        WithRepoPath {
-            root: &self.root,
-            inner,
-        }
+        WithRepoPath { repo: self, inner }
     }
 
     // TODO find the root of the git repository recursively, because you may
@@ -209,6 +212,7 @@ impl Repository {
         let head = head::Head::load(&path.join("HEAD"))?;
 
         Ok(Repository {
+            ignores: Ignores::load(&path)?,
             root: path,
             head_: head,
         })

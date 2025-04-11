@@ -1,3 +1,5 @@
+use log::{debug, trace};
+
 use crate::models::{
     object::{Object, Sha1Able},
     repo::WithRepoPath,
@@ -7,40 +9,43 @@ use crate::models::{
 use std::{collections::HashMap, fs, io, path::Path};
 
 /// A wrapper for the stage, because you may add twice for the same file
-pub struct StageMuter {
+pub struct FlattenTree {
     pub data: HashMap<String, TreeLine>,
+    pub save_object: bool,
 }
 
 pub trait StageService<'a> {
-    fn into_muter(self) -> WithRepoPath<'a, StageMuter>;
+    fn into_muter(self) -> WithRepoPath<'a, FlattenTree>;
 }
 
 impl<'a> StageService<'a> for WithRepoPath<'a, Stage> {
-    fn into_muter(self) -> WithRepoPath<'a, StageMuter> {
+    fn into_muter(self) -> WithRepoPath<'a, FlattenTree> {
         WithRepoPath::new(
-            self.root,
-            StageMuter {
+            self.repo,
+            FlattenTree {
                 data: self.unwrap().0.into_map(),
+                save_object: true,
             },
         )
     }
 }
 
-impl<'a> WithRepoPath<'a, StageMuter> {
+impl<'a> WithRepoPath<'a, FlattenTree> {
     /// add file to the stage
     /// it WON'T save stage file (`.git/index`), until you save it.
     pub fn add_file(&mut self, path: &Path) -> io::Result<&mut Self> {
-        let relative = path.strip_prefix(self.working_dir()).map_err(|e| {
+        let relative = path.strip_prefix(self.repo.working_dir()).map_err(|e| {
             io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!(
                     "{e}: root = {}, path = {}",
-                    self.working_dir().display(),
+                    self.repo.working_dir().display(),
                     path.display()
                 ),
             )
         })?;
-        println!("Adding file: {} ({})", relative.display(), path.display());
+
+        debug!("Adding file: {} ({})", relative.display(), path.display());
         let ctnt = fs::read(path)?;
         let blob = Object::Blob(
             String::from_utf8(ctnt)
@@ -49,23 +54,38 @@ impl<'a> WithRepoPath<'a, StageMuter> {
         );
 
         let blob = self.wrap(blob);
-        blob.save()?;
 
-        self.data.insert(
-            relative.to_string_lossy().into(),
-            TreeLine {
-                kind: TreeLineKind::File,
-                name: relative.to_string_lossy().into(),
-                sha1: blob.sha1().into(),
-            },
-        );
+        if self.save_object {
+            blob.save()?;
+        }
+
+        let line = TreeLine {
+            kind: TreeLineKind::File,
+            name: relative
+                .into_iter()
+                .map(|part| part.to_string_lossy().into_owned())
+                .collect::<Vec<String>>()
+                .join("/"),
+            sha1: blob.sha1().into(),
+        };
+
+        self.data.insert(line.name.clone(), line);
 
         Ok(self)
     }
 
     pub fn add_dir(&mut self, dir: &Path) -> io::Result<&mut Self> {
-        if dir == self.root {
+        if dir == self.repo.root {
             // skip the root directory
+            return Ok(self);
+        }
+        if self.repo.ignores.contains(
+            dir.file_name()
+                .unwrap_or_default()
+                .to_string_lossy()
+                .as_ref(),
+        ) {
+            // skip the .gitignore s
             return Ok(self);
         }
         for item in fs::read_dir(dir)? {
@@ -89,6 +109,6 @@ impl<'a> WithRepoPath<'a, StageMuter> {
     }
 
     pub fn freeze(self) -> WithRepoPath<'a, Stage> {
-        WithRepoPath::new(self.root, Stage(self.unwrap().data.into()))
+        WithRepoPath::new(self.repo, Stage(self.unwrap().data.into()))
     }
 }

@@ -54,9 +54,3 @@ pub enum Commands {
     /// (For debug) Display information about a object
     CatFile(cat_file::CatFile),
 }
-
-impl Commands {
-    pub fn show(&self) {
-        println!("{self:?}");
-    }
-}

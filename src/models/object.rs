@@ -79,6 +79,33 @@ impl Object {
             Object::Commit(_) => "commit",
         }
     }
+
+    /// ### Panics
+    /// If the object is not a blob, the function will panic.
+    pub fn cast_blob(self) -> Blob {
+        match self {
+            Object::Blob(blob) => blob,
+            _ => panic!("Object is not a Blob"),
+        }
+    }
+
+    /// ### Panics
+    /// If the object is not a tree, the function will panic.
+    pub fn cast_tree(self) -> Tree {
+        match self {
+            Object::Tree(tree) => tree,
+            _ => panic!("Object is not a Tree"),
+        }
+    }
+
+    /// ### Panics
+    /// If the object is not a commit, the function will panic.
+    pub fn cast_commit(self) -> Commit {
+        match self {
+            Object::Commit(commit) => commit,
+            _ => panic!("Object is not a Commit"),
+        }
+    }
 }
 
 impl DirContainer for Object {

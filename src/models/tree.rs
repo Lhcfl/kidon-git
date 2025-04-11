@@ -102,6 +102,13 @@ impl Tree {
             .map(|line| (line.name.clone(), line))
             .collect()
     }
+
+    pub fn get_map(&self) -> HashMap<String, &TreeLine> {
+        self.objects
+            .iter()
+            .map(|line| (line.name.clone(), line))
+            .collect()
+    }
 }
 
 #[cfg(test)]
