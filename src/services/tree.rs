@@ -27,6 +27,49 @@ pub struct ComparedLine {
     pub line: TreeLine,
 }
 
+pub fn compare_tree_stage(
+    tree: WithRepoPath<Tree>,
+    stage: &WithRepoPath<Tree>,
+) -> io::Result<Vec<ComparedLine>> {
+    let from_map = tree.into_flatten()?;
+    let to_map = stage.get_map();
+
+    let all_items = from_map
+        .keys()
+        .chain(to_map.keys())
+        .collect::<HashSet<&String>>();
+
+    let mut res = Vec::new();
+
+    for item in all_items.into_iter() {
+        let item_from = from_map.get(item);
+        let item_to = to_map.get(item).copied();
+        match (item_from, item_to) {
+            (Some(item_from), Some(item_to)) if item_from.sha1 != item_to.sha1 => {
+                res.push(ComparedLine {
+                    kind: ComparedKind::Modified,
+                    line: item_to.clone(),
+                });
+            }
+            (Some(removed), None) => {
+                res.push(ComparedLine {
+                    kind: ComparedKind::Deleted,
+                    line: removed.clone(),
+                });
+            }
+            (None, Some(added)) => {
+                res.push(ComparedLine {
+                    kind: ComparedKind::Added,
+                    line: added.clone(),
+                });
+            }
+            _ => {}
+        }
+    }
+
+    Ok(res)
+}
+
 /// 比较两个 tree
 pub fn compare_trees(
     from: &WithRepoPath<Tree>,
@@ -82,14 +125,18 @@ pub fn compare_trees(
 }
 
 impl WithRepoPath<'_, Tree> {
-    fn into_flatten(self) -> io::Result<HashMap<String, TreeLine>> {
+    pub fn into_flatten(self) -> io::Result<HashMap<String, TreeLine>> {
         let mut store = HashMap::new();
         let prefix = Path::new("");
         self.flatten_into(&mut store, prefix).unwrap();
         Ok(store)
     }
 
-    fn flatten_into(self, store: &mut HashMap<String, TreeLine>, prefix: &Path) -> io::Result<()> {
+    pub fn flatten_into(
+        self,
+        store: &mut HashMap<String, TreeLine>,
+        prefix: &Path,
+    ) -> io::Result<()> {
         let repolike = self.wrap(());
 
         for line in self.unwrap().objects.into_iter() {

@@ -5,7 +5,7 @@ use colored::Colorize;
 
 use crate::{
     models::{object::Object, repo::Repository},
-    services::tree::{ComparedKind, compare_trees},
+    services::tree::{ComparedKind, compare_tree_stage, compare_trees},
     traits::Accessable,
 };
 
@@ -31,8 +31,9 @@ impl Exec for Status {
                 .wrap(Object::accessor(&head_commit.tree))
                 .load()?
                 .map(|t| t.cast_tree());
-            compare_trees(&head_tree, &stage.map(|s| s.0))?
+            compare_tree_stage(head_tree, &stage.map(|s| s.0))?
         } else {
+            println!("\nNo commits yet");
             Vec::new()
         };
 
