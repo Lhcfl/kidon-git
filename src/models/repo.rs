@@ -6,6 +6,7 @@ use crate::traits::{Accessable, Accessor, DirContainer};
 use crate::{models::head::Head, traits::Store};
 use std::fmt::Display;
 use std::ops::Deref;
+use std::path::Path;
 use std::{
     env, fs,
     io::{self, ErrorKind},
@@ -14,6 +15,7 @@ use std::{
 
 #[derive(Debug)]
 pub struct Repository {
+    /// .git dir for the repository
     pub root: PathBuf,
     head_: Head,
 }
@@ -159,6 +161,12 @@ impl Repository {
 
     fn find_root() -> PathBuf {
         env::current_dir().expect("The currecnt directory is not valid")
+    }
+
+    pub fn working_dir(&self) -> &Path {
+        self.root
+            .parent()
+            .expect(".git directory should never be the root")
     }
 
     /// Load the repository form .git folder
