@@ -5,7 +5,6 @@ use crate::{
     models::{
         object::Object,
         repo::{Repository, WithRepoPath},
-        stage::Stage,
         tree::{Tree, TreeLine, TreeLineKind},
     },
     traits::Accessable,
@@ -42,8 +41,8 @@ pub fn compare_trees(
     let mut res = Vec::new();
 
     for item in all_items.into_iter() {
-        let item_from = from_map.get(item).map(|l| *l);
-        let item_to = to_map.get(item).map(|l| *l);
+        let item_from = from_map.get(item).copied();
+        let item_to = to_map.get(item).copied();
         match (item_from, item_to) {
             (Some(item_from), Some(item_to)) if item_from.sha1 != item_to.sha1 => {
                 if item_from.kind == TreeLineKind::Tree && item_to.kind == TreeLineKind::Tree {
@@ -86,7 +85,7 @@ impl WithRepoPath<'_, Tree> {
     fn into_flatten(self) -> io::Result<HashMap<String, TreeLine>> {
         let mut store = HashMap::new();
         let prefix = Path::new("");
-        self.flatten_into(&mut store, &prefix).unwrap();
+        self.flatten_into(&mut store, prefix).unwrap();
         Ok(store)
     }
 
@@ -105,7 +104,7 @@ impl WithRepoPath<'_, Tree> {
                 _ => {
                     let name_updated = prefix
                         .join(line.name)
-                        .into_iter()
+                        .iter()
                         .map(|part| part.to_string_lossy().into_owned())
                         .collect::<Vec<String>>()
                         .join("/");

@@ -1,4 +1,4 @@
-use log::{debug, trace};
+use log::debug;
 
 use crate::models::{
     object::{Object, Sha1Able},
@@ -62,7 +62,7 @@ impl<'a> WithRepoPath<'a, FlattenTree> {
         let line = TreeLine {
             kind: TreeLineKind::File,
             name: relative
-                .into_iter()
+                .iter()
                 .map(|part| part.to_string_lossy().into_owned())
                 .collect::<Vec<String>>()
                 .join("/"),

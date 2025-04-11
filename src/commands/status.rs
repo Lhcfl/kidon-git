@@ -4,7 +4,7 @@ use clap::Args;
 use colored::Colorize;
 
 use crate::{
-    models::{object::Object, repo::Repository, stage},
+    models::{object::Object, repo::Repository},
     services::tree::{ComparedKind, compare_trees},
     traits::Accessable,
 };

@@ -6,7 +6,7 @@ mod traits;
 use clap::Parser;
 use colored::Colorize;
 use commands::Exec;
-use log::{debug, trace};
+use log::debug;
 use simple_logger::SimpleLogger;
 
 #[derive(Debug, Parser)]
