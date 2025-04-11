@@ -1,6 +1,7 @@
 //! Repository Struct
 
 use super::branch::Branch;
+use super::stage::Stage;
 use super::{branch, head, object};
 use crate::traits::{Accessable, Accessor, DirContainer};
 use crate::{models::head::Head, traits::Store};
@@ -163,6 +164,7 @@ impl Repository {
         env::current_dir().expect("The currecnt directory is not valid")
     }
 
+    /// working dir of the git repo
     pub fn working_dir(&self) -> &Path {
         self.root
             .parent()
@@ -170,7 +172,6 @@ impl Repository {
     }
 
     /// Load the repository form .git folder
-    /// TODO
     pub fn load() -> Result<Self, RepositoryInitError> {
         let path = Self::find_root().join(Self::DIRECTORY);
         let _ = fs::read_dir(&path)?;
@@ -187,7 +188,6 @@ impl Repository {
     }
 
     /// Initialize the repository
-    /// TODO
     pub fn init() -> Result<Self, RepositoryInitError> {
         let path = Self::find_root().join(Self::DIRECTORY);
 
@@ -211,7 +211,18 @@ impl Repository {
         Ok(Self::load()?)
     }
 
+    /// get the head of the repository
     pub fn head(&self) -> WithRepoPath<&Head> {
         self.wrap(&self.head_)
+    }
+
+    /// get the staging index of the repository
+    pub fn stage(&self) -> io::Result<WithRepoPath<Stage>> {
+        let stage_file = self.root.join(Stage::LOCATION);
+        Ok(if stage_file.is_file() {
+            self.wrap(Stage::load(&stage_file)?)
+        } else {
+            self.wrap(Stage::empty())
+        })
     }
 }

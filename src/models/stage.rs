@@ -4,13 +4,19 @@
 use super::tree::Tree;
 use crate::traits::Store;
 use bincode::{Decode, Encode};
-use std::{fs, ops::Deref, path::Path};
+use std::{
+    fs,
+    ops::{Deref, DerefMut},
+    path::Path,
+};
 
 /// Staging area is actually a special [[Tree]]
 #[derive(Encode, Decode)]
 pub struct Stage(Tree);
 
 impl Stage {
+    pub const LOCATION: &str = "index";
+
     pub fn empty() -> Self {
         Stage(Tree {
             objects: Vec::new(),
@@ -26,13 +32,19 @@ impl Deref for Stage {
     }
 }
 
+impl DerefMut for Stage {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 impl Store for Stage {
     fn loaction(&self) -> std::path::PathBuf {
-        Path::new("index").to_path_buf()
+        Path::new(Self::LOCATION).to_path_buf()
     }
 
     fn store(&self, root: &std::path::Path) -> std::io::Result<()> {
-        let path = root.join("index");
+        let path = root.join(Self::LOCATION);
         if let Some(parent) = path.parent() {
             // Safely ignores the error if the directory already exists
             let _ = std::fs::create_dir_all(parent);
