@@ -4,6 +4,7 @@ mod services;
 mod traits;
 
 use clap::Parser;
+use colored::Colorize;
 use commands::Exec;
 
 #[derive(Debug, Parser)]
@@ -13,10 +14,13 @@ struct Args {
     command: commands::Commands,
 }
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let args = Args::parse();
 
     println!("Args: {:?}", args);
     args.command.show();
-    args.command.exec()
+
+    if let Err(e) = args.command.exec() {
+        println!("{}: {e}", "error".red());
+    }
 }

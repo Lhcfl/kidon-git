@@ -11,6 +11,7 @@ use std::{
 
 #[enum_dispatch]
 pub trait Sha1Able {
+    /// sha1 of the sha1able object
     fn sha1(&self) -> String;
 }
 

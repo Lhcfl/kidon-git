@@ -21,23 +21,17 @@ impl Exec for Init {
                 // noting to do
             }
             Err(e) => {
-                println!("error: {e:?}");
                 Err(e)?;
             }
         }
 
-        match Repository::init() {
-            Ok(repo) => {
-                println!(
-                    "successfully initialized git repo in {}",
-                    repo.root.to_string_lossy()
-                );
-                Ok(())
-            }
-            Err(e) => {
-                println!("error: failed to initialize git repo: {e:?}");
-                Err(e.into())
-            }
-        }
+        let repo = Repository::init()?;
+
+        println!(
+            "successfully initialized git repo in {}",
+            repo.root.to_string_lossy()
+        );
+
+        Ok(())
     }
 }

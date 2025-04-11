@@ -1,9 +1,10 @@
 //! Repository Struct
 
 use super::branch::Branch;
-use super::{head, object, refs};
+use super::{branch, head, object};
 use crate::traits::{Accessable, Accessor, DirContainer};
 use crate::{models::head::Head, traits::Store};
+use std::fmt::Display;
 use std::ops::Deref;
 use std::{
     env, fs,
@@ -98,6 +99,35 @@ pub enum RepositoryInitError {
     UnknownError(io::Error),
 }
 
+impl Display for RepositoryInitError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            RepositoryInitError::NotInitialized => write!(
+                f,
+                "fatal: not a git repository (or any of the parent directories)"
+            ),
+            RepositoryInitError::BadGitRepositoryDir => {
+                write!(f, "fatal: The dir is not a git repository, or is broken")
+            }
+            RepositoryInitError::NotADirectory(e) => {
+                write!(
+                    f,
+                    "fatal: The dir cannot be a valid git repository since some file already exists: {e}"
+                )
+            }
+            RepositoryInitError::AlreadyExists(e) => {
+                write!(
+                    f,
+                    "fatal: The dir cannot be a valid git repository since some directory already exists: {e}"
+                )
+            }
+            RepositoryInitError::UnknownError(e) => {
+                write!(f, "fatal: unknown error: {e}")
+            }
+        }
+    }
+}
+
 impl From<io::Error> for RepositoryInitError {
     fn from(value: io::Error) -> Self {
         match value.kind() {
@@ -111,17 +141,7 @@ impl From<io::Error> for RepositoryInitError {
 
 impl From<RepositoryInitError> for anyhow::Error {
     fn from(value: RepositoryInitError) -> Self {
-        match value {
-            RepositoryInitError::NotInitialized => {
-                anyhow::anyhow!("The repository is not initialized")
-            }
-            RepositoryInitError::BadGitRepositoryDir => {
-                anyhow::anyhow!("The dir is not a git repository, or is broken")
-            }
-            RepositoryInitError::NotADirectory(e) => anyhow::anyhow!(e),
-            RepositoryInitError::AlreadyExists(e) => anyhow::anyhow!(e),
-            RepositoryInitError::UnknownError(e) => anyhow::anyhow!(e),
-        }
+        anyhow::anyhow!(value.to_string())
     }
 }
 
@@ -143,7 +163,7 @@ impl Repository {
         let path = Self::find_root().join(Self::DIRECTORY);
         let _ = fs::read_dir(&path)?;
 
-        refs::Refs::check_dir_exists(&path);
+        branch::Branch::check_dir_exists(&path);
         object::Object::check_dir_exists(&path);
 
         let head = head::Head::load(&path.join("HEAD"))?;
@@ -160,7 +180,7 @@ impl Repository {
         let path = Self::find_root().join(Self::DIRECTORY);
 
         Self::make_dir(&Self::find_root())?;
-        refs::Refs::make_dir(&path)?;
+        branch::Branch::make_dir(&path)?;
         object::Object::make_dir(&path)?;
 
         let head = head::Head {

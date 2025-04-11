@@ -34,3 +34,15 @@ impl Store for Branch {
         }
     }
 }
+
+impl DirContainer for Branch {
+    const DIRECTORY: &'static str = "refs";
+
+    fn make_dir(root: &std::path::Path) -> std::io::Result<()> {
+        let path = root.join(Self::DIRECTORY);
+        std::fs::create_dir_all(&path)?;
+        std::fs::create_dir_all(path.join("heads"))?;
+        std::fs::create_dir_all(path.join("remotes"))?;
+        Ok(())
+    }
+}

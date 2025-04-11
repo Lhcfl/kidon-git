@@ -7,9 +7,14 @@ use std::time::SystemTime;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Commit {
+    /// Commit tree
     pub tree: ObjectSha1,
+    /// Privous commit
     pub parent: Option<ObjectSha1>,
+    /// Commit time
     pub timestamp: SystemTime,
+    /// Commit message.  
+    /// The first line is the summary, and the rest is the body.
     pub message: String,
 }
 
