@@ -43,8 +43,8 @@ impl From<&str> for ObjectSha1 {
 
 impl From<&String> for &ObjectSha1 {
     fn from(value: &String) -> Self {
-        // SAFETY: This is safe because ObjectSha1 is repr(transparent) over String
-        // so the memory layout is the same.
+        // SAFETY: This is safe because ObjectSha1 is repr(transparent) over
+        // String so the memory layout is the same.
         unsafe { transmute(value) }
     }
 }

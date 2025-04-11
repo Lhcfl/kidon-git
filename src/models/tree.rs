@@ -1,5 +1,5 @@
-//! A Tree stores the structure of a directory in a git repository.
-//! It contains a list of TreeLine objects, each representing a blob or another tree.
+//! A Tree stores the structure of a directory in a git repository. It contains
+//! a list of TreeLine objects, each representing a blob or another tree.
 
 use super::object::{ObjectSha1, Sha1Able};
 use bincode::{Decode, Encode};
@@ -38,8 +38,7 @@ impl Display for TreeLine {
     }
 }
 
-/// A normal tree is like a folder in a file system.
-/// for example a tree can be
+/// A normal tree is like a folder in a file system. for example a tree can be
 ///
 /// ```txt
 /// 100644 blob 0c12d336241a22c6b954d6fafdc998b6d9fb6e17    .gitignore
@@ -50,16 +49,16 @@ impl Display for TreeLine {
 /// 040000 tree 0e7c7eacd07aae9bfe41f3a88a9dab8b6401a5c9    src
 /// ```
 ///
-/// and you can recursively get the tree of `.vscode` by accessing
-/// [ObjectSha1] `90627a7a454193542b63eabb58a5e4ca28757313`
+/// and you can recursively get the tree of `.vscode` by accessing [ObjectSha1]
+/// `90627a7a454193542b63eabb58a5e4ca28757313`
 ///
 /// ```txt
 /// 100644 blob 770d907549efbbdce816734005b3ebc5364b3208    settings.json
 /// ```
 ///
-/// then you can get the content of `settings.json` by accessing
-/// [ObjectSha1] `770d907549efbbdce816734005b3ebc5364b3208`
-/// which is a [Blob](super::blob::Blob)
+/// then you can get the content of `settings.json` by accessing [ObjectSha1]
+/// `770d907549efbbdce816734005b3ebc5364b3208` which is a
+/// [Blob](super::blob::Blob)
 #[derive(Debug, Clone, Decode, Encode)]
 pub struct Tree {
     pub objects: Vec<TreeLine>,

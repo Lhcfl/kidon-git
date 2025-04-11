@@ -185,6 +185,8 @@ impl Repository {
         }
     }
 
+    // TODO find the root of the git repository recursively, because you may
+    // execute the command inside a subdirectory of the repository
     fn find_root() -> PathBuf {
         env::current_dir().expect("The currecnt directory is not valid")
     }

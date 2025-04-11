@@ -1,5 +1,5 @@
-//! stage files of the repo
-//! The stage files are used to store the changes that are not yet committed.
+//! stage files of the repo The stage files are used to store the changes that
+//! are not yet committed.
 
 use super::tree::Tree;
 use crate::traits::Store;
@@ -12,9 +12,10 @@ use std::{
 };
 
 /// Staging area is actually a special [Tree]  
-/// Notice that the stage tree will never contains another [Tree],
-/// which is the difference between a stage and a tree
-/// For example, a stage can contains a line like this:
+///
+/// Notice that the stage tree will never contains another [Tree], which is the
+/// difference between a stage and a tree For example, a stage can contains a
+/// line like this:
 ///
 /// ```txt
 /// 100644 blob 1234567890abcdef1234567890abcdef12345678    src/some_dir/file.txt
@@ -27,6 +28,13 @@ use std::{
 /// ``````
 ///
 /// See [Tree] for details
+///
+/// ### Mutablity
+///
+/// We don't allow directly [std::ops::DerefMut] for [Stage], because it's eazy
+/// to insert a dumplicated line into the stage, which is not an expected
+/// behavior. If you want to modify the stage, take the Tree to create a
+/// [StageMuter](crate::services::stage::StageMuter)
 #[derive(Encode, Decode)]
 pub struct Stage(pub Tree);
 

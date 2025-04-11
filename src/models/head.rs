@@ -1,4 +1,5 @@
-//! A pointer to the currently active branch of the context (repository, remote, etc.)
+//! A pointer to the currently active branch of the context (repository, remote,
+//! etc.)
 
 use crate::{
     serde_json_store,
