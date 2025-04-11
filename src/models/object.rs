@@ -5,6 +5,7 @@ use crate::traits::{Accessable, DirContainer, Store};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
 use std::{
+    fmt::Display,
     ops::Deref,
     path::{Path, PathBuf},
 };
@@ -44,12 +45,28 @@ impl Deref for ObjectSha1 {
     }
 }
 
+impl Display for ObjectSha1 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[enum_dispatch(Sha1Able)]
 pub enum Object {
     Blob(Blob),
     Tree(Tree),
     Commit(Commit),
+}
+
+impl Object {
+    pub fn object_type(&self) -> &'static str {
+        match self {
+            Object::Blob(_) => "blob",
+            Object::Tree(_) => "tree",
+            Object::Commit(_) => "commit",
+        }
+    }
 }
 
 impl DirContainer for Object {
@@ -87,7 +104,7 @@ mod test {
         let commit = Commit {
             tree: "tree_hash".into(),
             parent: Some("parent_hash".into()),
-            timestamp: std::time::SystemTime::UNIX_EPOCH,
+            timestamp: std::time::SystemTime::UNIX_EPOCH.into(),
             message: "commit message".to_string(),
         };
         assert_eq!(commit.sha1(), Object::from(commit).sha1());
@@ -118,7 +135,7 @@ mod test {
         let commit = Commit {
             tree: "tree_hash".into(),
             parent: Some("parent_hash".into()),
-            timestamp: std::time::SystemTime::UNIX_EPOCH,
+            timestamp: std::time::SystemTime::UNIX_EPOCH.into(),
             message: "commit message".to_string(),
         };
         let object = Object::from(commit.clone());
@@ -129,10 +146,7 @@ mod test {
                 "Commit": {
                     "tree": "tree_hash",
                     "parent": "parent_hash",
-                    "timestamp": {
-                        "secs_since_epoch": 0,
-                        "nanos_since_epoch": 0
-                    },
+                    "timestamp": "1970-01-01T00:00:00Z",
                     "message": "commit message",
                 }
             })

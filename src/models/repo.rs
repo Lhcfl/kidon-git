@@ -45,6 +45,10 @@ impl<'r, T> WithRepoPath<'r, T> {
             inner,
         }
     }
+
+    pub fn unwrap(self) -> T {
+        self.inner
+    }
 }
 
 impl<T> Deref for WithRepoPath<'_, T> {
@@ -65,13 +69,13 @@ where
     }
 }
 
-impl<By, T> WithRepoPath<'_, Accessor<By, T>>
+impl<'r, 'a, By, T> WithRepoPath<'r, Accessor<'a, By, T>>
 where
     T: Accessable<By>,
     T: Store,
 {
     /// Load the storeable object from the repository
-    pub fn load(&self) -> io::Result<WithRepoPath<T>> {
+    pub fn load(&self) -> io::Result<WithRepoPath<'r, T>> {
         let inner = T::load(&self.root.join(self.inner.path()))?;
         Ok(WithRepoPath {
             root: self.root,

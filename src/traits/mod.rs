@@ -1,7 +1,6 @@
 use std::{
     fs, io,
     marker::PhantomData,
-    ops::Deref,
     path::{Path, PathBuf},
 };
 
@@ -48,12 +47,12 @@ where
 }
 
 /// Wraped the accessor to the storeable object
-pub struct Accessor<By, T>
+pub struct Accessor<'a, By, T>
 where
     T: Store,
     T: Accessable<By>,
 {
-    by: By,
+    by: &'a By,
     _will_into: PhantomData<T>,
 }
 
@@ -63,7 +62,7 @@ where
     Self: Store,
 {
     /// Get an accessor of the object
-    fn accessor(by: impl Into<By>) -> Accessor<By, Self> {
+    fn accessor<'a>(by: impl Into<&'a By>) -> Accessor<'a, By, Self> {
         Accessor {
             by: by.into(),
             _will_into: PhantomData,
@@ -73,12 +72,12 @@ where
     fn path_of(by: &By) -> PathBuf;
 }
 
-impl<By, T> Accessor<By, T>
+impl<'a, By, T> Accessor<'a, By, T>
 where
     T: Store,
     T: Accessable<By>,
 {
     pub fn path(&self) -> PathBuf {
-        T::path_of(&self.by)
+        T::path_of(self.by)
     }
 }

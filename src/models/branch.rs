@@ -13,14 +13,11 @@ pub struct Branch {
 impl Accessable<String> for Branch {
     fn path_of(by: &String) -> std::path::PathBuf {
         let mut iter = by.split('/');
-        if let Some(remote) = iter.next() {
-            return std::path::PathBuf::from(format!(
-                "refs/remotes/{}/{}",
-                remote,
-                iter.next().expect("branch name is empty")
-            ));
+        let first = iter.next().expect("branch name is empty");
+        if let Some(branch) = iter.next() {
+            return std::path::PathBuf::from(format!("refs/remotes/{}/{}", first, branch));
         } else {
-            std::path::PathBuf::from(format!("refs/heads/{}", by))
+            std::path::PathBuf::from(format!("refs/heads/{}", first))
         }
     }
 }
