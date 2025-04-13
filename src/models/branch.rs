@@ -5,12 +5,21 @@ use crate::{
     traits::{Accessable, DirContainer, Store},
 };
 use serde::{Deserialize, Serialize};
+use regex::Regex;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Branch {
     pub remote: Option<String>,
     pub name: String,
     pub head: Option<ObjectSha1>,
+}
+
+impl Branch{
+    pub fn validate_name(name: &str) -> bool {
+        //  use regex to match as just include alnum, dot, dash, and underscore
+        let re = Regex::new(r"^[\w\.\-\d]+$").unwrap();
+        re.is_match(name)
+    }
 }
 
 impl Accessable<String> for Branch {
