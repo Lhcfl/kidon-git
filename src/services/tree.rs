@@ -4,7 +4,7 @@ use super::stage::FlattenTree;
 use crate::{
     models::{
         object::Object,
-        repo::{Repository, WithRepoPath},
+        repo::{Repository, WithRepo},
         tree::{Tree, TreeLine, TreeLineKind},
     },
     traits::Accessable,
@@ -28,8 +28,8 @@ pub struct ComparedLine {
 }
 
 pub fn compare_tree_stage(
-    tree: WithRepoPath<Tree>,
-    stage: &WithRepoPath<Tree>,
+    tree: WithRepo<Tree>,
+    stage: &WithRepo<Tree>,
 ) -> io::Result<Vec<ComparedLine>> {
     let from_map = tree.into_flatten()?;
     let to_map = stage.get_map();
@@ -72,8 +72,8 @@ pub fn compare_tree_stage(
 
 /// 比较两个 tree
 pub fn compare_trees(
-    from: &WithRepoPath<Tree>,
-    to: &WithRepoPath<Tree>,
+    from: &WithRepo<Tree>,
+    to: &WithRepo<Tree>,
 ) -> io::Result<Vec<ComparedLine>> {
     let from_map = from.get_map();
     let to_map = to.get_map();
@@ -124,7 +124,7 @@ pub fn compare_trees(
     Ok(res)
 }
 
-impl WithRepoPath<'_, Tree> {
+impl WithRepo<'_, Tree> {
     pub fn into_flatten(self) -> io::Result<HashMap<String, TreeLine>> {
         let mut store = HashMap::new();
         let prefix = Path::new("");
@@ -172,7 +172,7 @@ impl WithRepoPath<'_, Tree> {
 
 impl Repository {
     /// get the working directory of the repository
-    pub fn working_tree(&self) -> io::Result<WithRepoPath<Tree>> {
+    pub fn working_tree(&self) -> io::Result<WithRepo<Tree>> {
         let mut fake_stage = self.wrap(FlattenTree {
             data: HashMap::new(),
             save_object: false,

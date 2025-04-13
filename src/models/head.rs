@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
-use super::{branch::Branch, repo::WithRepoPath};
+use super::{branch::Branch, repo::WithRepo};
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub enum HeadKind {
@@ -29,9 +29,9 @@ impl Store for Head {
     serde_json_store!();
 }
 
-impl<'r> WithRepoPath<'r, &Head> {
+impl<'r> WithRepo<'r, &Head> {
     /// Get the branch of the head
-    pub fn branch<'a>(&'a self) -> WithRepoPath<'r, Accessor<'a, String, Branch>> {
+    pub fn branch<'a>(&'a self) -> WithRepo<'r, Accessor<'a, String, Branch>> {
         self.wrap(Branch::accessor(&self.branch_name))
     }
 }

@@ -1,7 +1,7 @@
 use crate::{
     models::{
         branch::Branch,
-        repo::{Repository, WithRepoPath},
+        repo::{Repository, WithRepo},
     },
     traits::{Accessable, DirContainer},
 };
@@ -28,10 +28,8 @@ impl From<BranchCreationError> for anyhow::Error {
 }
 pub trait BranchService {
     fn list_branch(&self) -> io::Result<Vec<String>>;
-    fn create_branch(
-        &self,
-        branch_name: &str,
-    ) -> Result<WithRepoPath<'_, Branch>, BranchCreationError>;
+    fn create_branch(&self, branch_name: &str)
+    -> Result<WithRepo<'_, Branch>, BranchCreationError>;
 }
 
 impl BranchService for Repository {
@@ -76,7 +74,7 @@ impl BranchService for Repository {
 
         Ok(branches)
     }
-    fn create_branch(&self, name: &str) -> Result<WithRepoPath<'_, Branch>, BranchCreationError> {
+    fn create_branch(&self, name: &str) -> Result<WithRepo<'_, Branch>, BranchCreationError> {
         Branch::validate_name(name)
             .then_some(())
             .ok_or(BranchCreationError::InvalidName)?;

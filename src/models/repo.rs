@@ -37,19 +37,19 @@ pub struct Repository {
 /// let obj = repo.wrap(Object::accessor("some sha1".into())); // WithRepoPath<Accessor<ObjectSha1, Object>>
 /// obj.load(); // Load the object from the repository
 /// ```
-pub struct WithRepoPath<'r, T> {
+pub struct WithRepo<'r, T> {
     pub repo: &'r Repository,
     inner: T,
 }
 
-impl<'r, T> WithRepoPath<'r, T> {
+impl<'r, T> WithRepo<'r, T> {
     pub fn new(repo: &'r Repository, inner: T) -> Self {
-        WithRepoPath { repo, inner }
+        WithRepo { repo, inner }
     }
 
     /// Wrap the storeable object with the repository path
-    pub fn wrap<To>(&self, inner: To) -> WithRepoPath<'r, To> {
-        WithRepoPath {
+    pub fn wrap<To>(&self, inner: To) -> WithRepo<'r, To> {
+        WithRepo {
             repo: self.repo,
             inner,
         }
@@ -59,18 +59,18 @@ impl<'r, T> WithRepoPath<'r, T> {
         self.inner
     }
 
-    pub fn map<F, U>(self, f: F) -> WithRepoPath<'r, U>
+    pub fn map<F, U>(self, f: F) -> WithRepo<'r, U>
     where
         F: FnOnce(T) -> U,
     {
-        WithRepoPath {
+        WithRepo {
             repo: self.repo,
             inner: f(self.inner),
         }
     }
 }
 
-impl<T> Deref for WithRepoPath<'_, T> {
+impl<T> Deref for WithRepo<'_, T> {
     type Target = T;
 
     fn deref(&self) -> &Self::Target {
@@ -78,13 +78,13 @@ impl<T> Deref for WithRepoPath<'_, T> {
     }
 }
 
-impl<T> DerefMut for WithRepoPath<'_, T> {
+impl<T> DerefMut for WithRepo<'_, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.inner
     }
 }
 
-impl<T> Display for WithRepoPath<'_, T>
+impl<T> Display for WithRepo<'_, T>
 where
     T: Display,
 {
@@ -93,7 +93,7 @@ where
     }
 }
 
-impl<T> WithRepoPath<'_, T>
+impl<T> WithRepo<'_, T>
 where
     T: Store,
 {
@@ -103,15 +103,15 @@ where
     }
 }
 
-impl<'r, By, T> WithRepoPath<'r, Accessor<'_, By, T>>
+impl<'r, By, T> WithRepo<'r, Accessor<'_, By, T>>
 where
     T: Accessable<By>,
     T: Store,
 {
     /// Load the storeable object from the repository
-    pub fn load(&self) -> io::Result<WithRepoPath<'r, T>> {
+    pub fn load(&self) -> io::Result<WithRepo<'r, T>> {
         let inner = T::load(&self.repo.root.join(self.inner.path()))?;
-        Ok(WithRepoPath {
+        Ok(WithRepo {
             repo: self.repo,
             inner,
         })
@@ -184,8 +184,8 @@ impl From<RepositoryInitError> for anyhow::Error {
 }
 
 impl Repository {
-    pub fn wrap<T>(&self, inner: T) -> WithRepoPath<T> {
-        WithRepoPath { repo: self, inner }
+    pub fn wrap<T>(&self, inner: T) -> WithRepo<T> {
+        WithRepo { repo: self, inner }
     }
 
     // TODO find the root of the git repository recursively, because you may
@@ -243,12 +243,12 @@ impl Repository {
     }
 
     /// get the head of the repository
-    pub fn head(&self) -> WithRepoPath<&Head> {
+    pub fn head(&self) -> WithRepo<&Head> {
         self.wrap(&self.head_)
     }
 
     /// get the staging index of the repository
-    pub fn stage(&self) -> io::Result<WithRepoPath<Stage>> {
+    pub fn stage(&self) -> io::Result<WithRepo<Stage>> {
         let stage_file = self.root.join(Stage::LOCATION);
         Ok(if stage_file.is_file() {
             self.wrap(Stage::load(&stage_file)?)

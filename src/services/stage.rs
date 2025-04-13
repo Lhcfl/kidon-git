@@ -2,7 +2,7 @@ use log::debug;
 
 use crate::models::{
     object::{Object, Sha1Able},
-    repo::WithRepoPath,
+    repo::WithRepo,
     stage::Stage,
     tree::{TreeLine, TreeLineKind},
 };
@@ -15,12 +15,12 @@ pub struct FlattenTree {
 }
 
 pub trait StageService<'a> {
-    fn into_muter(self) -> WithRepoPath<'a, FlattenTree>;
+    fn into_muter(self) -> WithRepo<'a, FlattenTree>;
 }
 
-impl<'a> StageService<'a> for WithRepoPath<'a, Stage> {
-    fn into_muter(self) -> WithRepoPath<'a, FlattenTree> {
-        WithRepoPath::new(
+impl<'a> StageService<'a> for WithRepo<'a, Stage> {
+    fn into_muter(self) -> WithRepo<'a, FlattenTree> {
+        WithRepo::new(
             self.repo,
             FlattenTree {
                 data: self.unwrap().0.into_map(),
@@ -30,7 +30,7 @@ impl<'a> StageService<'a> for WithRepoPath<'a, Stage> {
     }
 }
 
-impl<'a> WithRepoPath<'a, FlattenTree> {
+impl<'a> WithRepo<'a, FlattenTree> {
     /// add file to the stage
     /// it WON'T save stage file (`.git/index`), until you save it.
     pub fn add_file(&mut self, path: &Path) -> io::Result<&mut Self> {
@@ -108,7 +108,7 @@ impl<'a> WithRepoPath<'a, FlattenTree> {
         }
     }
 
-    pub fn freeze(self) -> WithRepoPath<'a, Stage> {
-        WithRepoPath::new(self.repo, Stage(self.unwrap().data.into()))
+    pub fn freeze(self) -> WithRepo<'a, Stage> {
+        WithRepo::new(self.repo, Stage(self.unwrap().data.into()))
     }
 }
