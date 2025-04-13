@@ -1,11 +1,11 @@
-
 use crate::{
-    models::{branch::Branch, repo::Repository},
+    models::{
+        branch::Branch,
+        repo::{Repository, WithRepoPath},
+    },
     traits::{Accessable, DirContainer},
 };
 use std::io;
-
-use super::repo;
 
 pub enum BranchCreationError {
     AlreadyExists,
@@ -28,7 +28,10 @@ impl From<BranchCreationError> for anyhow::Error {
 }
 pub trait BranchService {
     fn list_branch(&self) -> io::Result<Vec<String>>;
-    fn create_branch(&self, branch_name: &str) -> Result<Branch, BranchCreationError>;
+    fn create_branch(
+        &self,
+        branch_name: &str,
+    ) -> Result<WithRepoPath<'_, Branch>, BranchCreationError>;
 }
 
 impl BranchService for Repository {
@@ -73,18 +76,19 @@ impl BranchService for Repository {
 
         Ok(branches)
     }
-    fn create_branch(&self, name: &str)-> Result<Branch, BranchCreationError> {
-        Branch::validate_name(name).then_some(()).ok_or(BranchCreationError::InvalidName)?;
-        let Err(_) = self.wrap(Branch::accessor(&name)).load() else{
+    fn create_branch(&self, name: &str) -> Result<WithRepoPath<'_, Branch>, BranchCreationError> {
+        Branch::validate_name(name)
+            .then_some(())
+            .ok_or(BranchCreationError::InvalidName)?;
+        let Err(_) = self.wrap(Branch::accessor(&name)).load() else {
             return Err(BranchCreationError::AlreadyExists);
         };
-        let new_branch=Branch{
+        let wrap = self.wrap(Branch {
             remote: None,
             name: name.to_string(),
-            head: self.head().branch().load()?.unwrap().head
-        };
-        let wrap = self.wrap(new_branch);
+            head: self.head().branch().load()?.unwrap().head,
+        });
         wrap.save()?;
-        Ok(wrap.unwrap())
+        Ok(wrap)
     }
 }

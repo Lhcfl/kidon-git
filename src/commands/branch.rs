@@ -45,7 +45,7 @@ impl Exec for Branch {
             // 放在 services/branch.rs 的 impl BranchService for Repository 里
         } else {
             // create branch
-            repo.create_branch(&branch_name)?;
+            repo.create_branch(branch_name)?;
             Ok(())
         }
     }
