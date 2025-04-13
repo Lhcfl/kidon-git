@@ -1,6 +1,5 @@
 use super::Exec;
 use crate::{models::repo::Repository, services::branch::BranchService};
-use anyhow::Ok;
 use clap::Args;
 use colored::Colorize;
 
@@ -40,9 +39,8 @@ impl Exec for Branch {
         let branch_name = self.name.as_ref().unwrap();
         if self.delete {
             // delete branch
-            panic!("branch delete is not implemented")
-            // TODO @leonard 把 branch 的创建和删除作为一个实现给 repo 的 trait
-            // 放在 services/branch.rs 的 impl BranchService for Repository 里
+            repo.delete_branch(branch_name)?;
+            Ok(())
         } else {
             // create branch
             repo.create_branch(branch_name)?;

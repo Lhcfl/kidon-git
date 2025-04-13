@@ -47,7 +47,7 @@ impl Deref for Stage {
 }
 
 impl Store for Stage {
-    fn loaction(&self) -> PathBuf {
+    fn location(&self) -> PathBuf {
         Path::new(Self::LOCATION).to_path_buf()
     }
 

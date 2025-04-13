@@ -4,7 +4,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-
 pub trait DirContainer {
     const DIRECTORY: &'static str;
 
@@ -23,16 +22,20 @@ pub trait Store
 where
     Self: Sized,
 {
-    fn loaction(&self) -> PathBuf;
-    fn store(&self, file: &Path) -> io::Result<()>;
+    fn location(&self) -> PathBuf;
+    fn store(&self, root: &Path) -> io::Result<()>;
     fn load(file: &Path) -> io::Result<Self>;
+    fn delete(&self, root: &Path) -> io::Result<()> {
+        let path = root.join(self.location());
+        std::fs::remove_file(path)
+    }
 }
 
 #[macro_export]
 macro_rules! serde_json_store {
     () => {
         fn store(&self, root: &std::path::Path) -> std::io::Result<()> {
-            let path = root.join(self.loaction());
+            let path = root.join(self.location());
             if let Some(parent) = path.parent() {
                 // Safely ignores the error if the directory already exists
                 let _ = std::fs::create_dir_all(parent);

@@ -19,7 +19,7 @@ impl Deref for Ignores {
 }
 
 impl Store for Ignores {
-    fn loaction(&self) -> PathBuf {
+    fn location(&self) -> PathBuf {
         PathBuf::from(".gitignore")
     }
     fn store(&self, _file: &Path) -> io::Result<()> {

@@ -108,6 +108,10 @@ where
     pub fn save(&self) -> io::Result<()> {
         self.store(&self.repo.root)
     }
+    /// Delete the storeable object from the repository
+    pub fn remove(&self) -> io::Result<()> {
+        self.delete(&self.repo.root)
+    }
 }
 
 impl<'r, By, T> WithRepo<'r, Accessor<'_, By, T>>

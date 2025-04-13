@@ -20,6 +20,13 @@ impl Branch {
         let re = Regex::new(r"^[\w\.\-\d]+$").unwrap();
         re.is_match(name)
     }
+    pub fn full_name(&self) -> String {
+        if let Some(remote) = &self.remote {
+            format!("{}/{}", remote, self.name)
+        } else {
+            self.name.clone()
+        }
+    }
 }
 
 fn path_of(by: &str) -> std::path::PathBuf {
@@ -45,7 +52,7 @@ impl Accessable<String> for Branch {
 }
 
 impl Store for Branch {
-    fn loaction(&self) -> std::path::PathBuf {
+    fn location(&self) -> std::path::PathBuf {
         if let Some(remote) = &self.remote {
             std::path::PathBuf::from(format!("refs/remotes/{}/{}", remote, self.name))
         } else {
