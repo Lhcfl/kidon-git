@@ -4,8 +4,8 @@ use crate::{
     serde_json_store,
     traits::{Accessable, DirContainer, Store},
 };
-use serde::{Deserialize, Serialize};
 use regex::Regex;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Branch {
@@ -14,7 +14,7 @@ pub struct Branch {
     pub head: Option<ObjectSha1>,
 }
 
-impl Branch{
+impl Branch {
     pub fn validate_name(name: &str) -> bool {
         //  use regex to match as just include alnum, dot, dash, and underscore
         let re = Regex::new(r"^[\w\.\-\d]+$").unwrap();
@@ -22,15 +22,25 @@ impl Branch{
     }
 }
 
+fn path_of(by: &str) -> std::path::PathBuf {
+    let mut iter = by.split('/');
+    let first = iter.next().expect("branch name is empty");
+    if let Some(branch) = iter.next() {
+        std::path::PathBuf::from(format!("refs/remotes/{}/{}", first, branch))
+    } else {
+        std::path::PathBuf::from(format!("refs/heads/{}", first))
+    }
+}
+
 impl Accessable<&str> for Branch {
     fn path_of(by: &&str) -> std::path::PathBuf {
-        let mut iter = by.split('/');
-        let first = iter.next().expect("branch name is empty");
-        if let Some(branch) = iter.next() {
-            std::path::PathBuf::from(format!("refs/remotes/{}/{}", first, branch))
-        } else {
-            std::path::PathBuf::from(format!("refs/heads/{}", first))
-        }
+        path_of(by)
+    }
+}
+
+impl Accessable<String> for Branch {
+    fn path_of(by: &String) -> std::path::PathBuf {
+        path_of(by)
     }
 }
 

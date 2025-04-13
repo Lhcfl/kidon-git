@@ -31,7 +31,7 @@ impl Store for Head {
 
 impl<'r> WithRepoPath<'r, &Head> {
     /// Get the branch of the head
-    pub fn branch(&self) -> WithRepoPath<'r, Accessor<String, Branch>> {
-        self.wrap(Branch::accessor(&self.branch_name.as_str()))
+    pub fn branch<'a>(&'a self) -> WithRepoPath<'r, Accessor<'a, String, Branch>> {
+        self.wrap(Branch::accessor(&self.branch_name))
     }
 }
