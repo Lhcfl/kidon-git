@@ -33,6 +33,7 @@ pub trait BranchService {
 }
 
 impl BranchService for Repository {
+    /// list branch names, including remote branches, by a vector of strings
     fn list_branch(&self) -> io::Result<Vec<String>> {
         let mut branches = Vec::new();
         for entry in std::fs::read_dir(self.root.join(Branch::DIRECTORY).join("heads"))? {
@@ -74,6 +75,8 @@ impl BranchService for Repository {
 
         Ok(branches)
     }
+
+    /// Create a new branch with the given name based on the current branch
     fn create_branch(&self, name: &str) -> Result<WithRepo<'_, Branch>, BranchCreationError> {
         Branch::validate_name(name)
             .then_some(())
