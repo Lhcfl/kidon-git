@@ -1,11 +1,22 @@
+use nom::{branch, Err};
+
 use crate::{
     models::{branch::Branch, repo::Repository},
-    traits::DirContainer,
+    traits::{Accessable, DirContainer},
 };
 use std::io;
 
+use super::repo;
+
+enum BranchCreationError {
+    AlreadyExists,
+    InvalidName,
+    IoError(io::Error),
+}
+
 pub trait BranchService {
     fn list_branch(&self) -> io::Result<Vec<String>>;
+    fn create_branch(&self, branch_name: &str) -> Result<Branch, BranchCreationError>;
 }
 
 impl BranchService for Repository {
@@ -49,5 +60,17 @@ impl BranchService for Repository {
         }
 
         Ok(branches)
+    }
+    fn create_branch(&self, name: &str)-> Result<Branch, BranchCreationError> {
+        Branch::validate_name(name).then_some(()).ok_or(BranchCreationError::InvalidName)?;
+        let Err(_) = self.wrap(Branch::accessor(&name)).load() else{
+            return Err(BranchCreationError::AlreadyExists);
+        };
+        let new_branch=Branch{
+            remote: None,
+            name: name.to_string(),
+            head: self.head().branch().load()?.head()
+        }
+        
     }
 }

@@ -22,8 +22,8 @@ impl Branch{
     }
 }
 
-impl Accessable<String> for Branch {
-    fn path_of(by: &String) -> std::path::PathBuf {
+impl Accessable<&str> for Branch {
+    fn path_of(by: &&str) -> std::path::PathBuf {
         let mut iter = by.split('/');
         let first = iter.next().expect("branch name is empty");
         if let Some(branch) = iter.next() {

@@ -36,6 +36,9 @@ impl Exec for Branch {
         }
 
         if self.delete {
+            let repo= Repository::load()?;
+            let branch_name = self.name.as_ref().unwrap();
+            
             // delete branch
             panic!("branch delete is not implemented")
             // TODO @leonard 把 branch 的创建和删除作为一个实现给 repo 的 trait
