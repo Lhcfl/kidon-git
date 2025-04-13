@@ -1,4 +1,3 @@
-use nom::{branch, Err};
 
 use crate::{
     models::{branch::Branch, repo::Repository},
@@ -8,12 +7,25 @@ use std::io;
 
 use super::repo;
 
-enum BranchCreationError {
+pub enum BranchCreationError {
     AlreadyExists,
     InvalidName,
     IoError(io::Error),
 }
-
+impl From<io::Error> for BranchCreationError {
+    fn from(err: io::Error) -> Self {
+        BranchCreationError::IoError(err)
+    }
+}
+impl From<BranchCreationError> for anyhow::Error {
+    fn from(err: BranchCreationError) -> Self {
+        match err {
+            BranchCreationError::AlreadyExists => anyhow::anyhow!("branch already exists"),
+            BranchCreationError::InvalidName => anyhow::anyhow!("invalid branch name"),
+            BranchCreationError::IoError(err) => err.into(),
+        }
+    }
+}
 pub trait BranchService {
     fn list_branch(&self) -> io::Result<Vec<String>>;
     fn create_branch(&self, branch_name: &str) -> Result<Branch, BranchCreationError>;
@@ -69,8 +81,10 @@ impl BranchService for Repository {
         let new_branch=Branch{
             remote: None,
             name: name.to_string(),
-            head: self.head().branch().load()?.head()
-        }
-        
+            head: self.head().branch().load()?.unwrap().head
+        };
+        let wrap = self.wrap(new_branch);
+        wrap.save()?;
+        Ok(wrap.unwrap())
     }
 }
