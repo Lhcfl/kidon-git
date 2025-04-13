@@ -23,9 +23,11 @@ pub struct Repository {
     head_: Head,
 }
 
-/// A wrapper for the storeable object with the repository path  
-/// This is used to save and load the object from the repository  
-/// Usage:
+/// A wrapper, like a [Box] but not dynamic, for any object to store the
+/// referance with the repository  
+/// This is designed to use in saving and loading the object from the repository  
+///
+/// ### Usage:
 ///   
 /// ```rust
 /// let head = repo.head(); // WithRepoPath<Head>
@@ -36,6 +38,11 @@ pub struct Repository {
 /// ```rust
 /// let obj = repo.wrap(Object::accessor("some sha1".into())); // WithRepoPath<Accessor<ObjectSha1, Object>>
 /// obj.load(); // Load the object from the repository
+/// ```
+///
+/// ```rust
+/// let blob = repo.wrap(Object::Blob("some blob".into())); // WithRepoPath<Blob>
+/// blob.save(); // Save the object to the repository
 /// ```
 pub struct WithRepo<'r, T> {
     pub repo: &'r Repository,
