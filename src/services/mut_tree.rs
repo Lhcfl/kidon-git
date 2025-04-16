@@ -3,7 +3,6 @@ use log::debug;
 use crate::models::{
     object::{Object, Sha1Able},
     repo::WithRepo,
-    stage::Stage,
     tree::{Tree, TreeLine, TreeLineKind},
 };
 use std::{collections::HashMap, fs, io, path::Path};
