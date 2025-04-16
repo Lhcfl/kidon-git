@@ -5,7 +5,7 @@ use colored::Colorize;
 
 use crate::{
     models::{object::Object, repo::Repository},
-    services::tree::{ComparedKind, compare_tree_stage, compare_trees},
+    services::tree::{ComparedKind, compare_trees},
     traits::Accessable,
 };
 
@@ -21,8 +21,8 @@ impl Exec for Status {
 
         println!("On branch {}", branch.name);
 
-        let mut staging_change = if let Some(sha1) = &branch.head {
-            let stage = repo.stage()?;
+        let stage_tree = repo.stage()?.map(|s| s.0);
+        let staging_change = if let Some(sha1) = &branch.head {
             let head_commit = repo
                 .wrap(Object::accessor(sha1))
                 .load()?
@@ -31,13 +31,14 @@ impl Exec for Status {
                 .wrap(Object::accessor(&head_commit.tree))
                 .load()?
                 .map(|t| t.cast_tree());
-            compare_tree_stage(head_tree, &stage.map(|s| s.0))?
+
+            let mut res = compare_trees(&head_tree, &stage_tree)?;
+            res.sort_by(|a, b| a.line.name.cmp(&b.line.name));
+            res
         } else {
             println!("\nNo commits yet");
             Vec::new()
         };
-
-        staging_change.sort_by(|a, b| a.line.name.cmp(&b.line.name));
 
         if staging_change.is_empty().not() {
             println!(
@@ -48,30 +49,20 @@ Changes to be committed:
             for diff in &staging_change {
                 match diff.kind {
                     ComparedKind::Modified => {
-                        println!(
-                            "{}",
-                            format!("        modified:   {}", diff.line.name).yellow()
-                        );
+                        println!("{}", diff.to_string().yellow());
                     }
                     ComparedKind::Deleted => {
-                        println!(
-                            "{}",
-                            format!("        deleted:    {}", diff.line.name).red()
-                        );
+                        println!("{}", diff.to_string().red());
                     }
                     ComparedKind::Added => {
-                        println!(
-                            "{}",
-                            format!("        new file:   {}", diff.line.name).green()
-                        );
+                        println!("{}", diff.to_string().green());
                     }
                 }
             }
         }
 
-        let stage = repo.stage()?;
         let working_tree = repo.working_tree()?;
-        let mut working_change = compare_trees(&stage.map(|s| s.0), &working_tree)?;
+        let mut working_change = compare_trees(&stage_tree, &working_tree)?;
 
         working_change.sort_by(|a, b| a.line.name.cmp(&b.line.name));
 
@@ -90,22 +81,13 @@ Changes not staged for commit:
             for diff in changes_not_staged_for_commit {
                 match diff.kind {
                     ComparedKind::Modified => {
-                        println!(
-                            "{}",
-                            format!("        modified:   {}", diff.line.name).yellow()
-                        );
+                        println!("{}", diff.to_string().yellow());
                     }
                     ComparedKind::Deleted => {
-                        println!(
-                            "{}",
-                            format!("        deleted:    {}", diff.line.name).red()
-                        );
+                        println!("{}", diff.to_string().red());
                     }
                     ComparedKind::Added => {
-                        println!(
-                            "{}",
-                            format!("        new file:   {}", diff.line.name).green()
-                        );
+                        println!("{}", diff.to_string().green());
                     }
                 }
             }

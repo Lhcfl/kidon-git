@@ -4,25 +4,25 @@ use crate::models::{
     object::{Object, Sha1Able},
     repo::WithRepo,
     stage::Stage,
-    tree::{TreeLine, TreeLineKind},
+    tree::{Tree, TreeLine, TreeLineKind},
 };
 use std::{collections::HashMap, fs, io, path::Path};
 
-/// A wrapper for the stage, because you may add twice for the same file
-pub struct FlattenTree {
+/// A wrapper for the tree, because you may add twice for the same file
+pub struct MutableTree {
     pub data: HashMap<String, TreeLine>,
     pub save_object: bool,
 }
 
 pub trait StageService<'a> {
-    fn into_muter(self) -> WithRepo<'a, FlattenTree>;
+    fn into_muter(self) -> WithRepo<'a, MutableTree>;
 }
 
 impl<'a> StageService<'a> for WithRepo<'a, Stage> {
-    fn into_muter(self) -> WithRepo<'a, FlattenTree> {
+    fn into_muter(self) -> WithRepo<'a, MutableTree> {
         WithRepo::new(
             self.repo,
-            FlattenTree {
+            MutableTree {
                 data: self.unwrap().0.into_map(),
                 save_object: true,
             },
@@ -30,7 +30,7 @@ impl<'a> StageService<'a> for WithRepo<'a, Stage> {
     }
 }
 
-impl<'a> WithRepo<'a, FlattenTree> {
+impl<'a> WithRepo<'a, MutableTree> {
     /// add file to the stage
     /// it WON'T save stage file (`.git/index`), until you save it.
     pub fn add_file(&mut self, path: &Path) -> io::Result<&mut Self> {
@@ -44,6 +44,13 @@ impl<'a> WithRepo<'a, FlattenTree> {
                 ),
             )
         })?;
+        let filename = path
+            .file_name()
+            .ok_or(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("file name is invalid: {}", path.display()),
+            ))?
+            .to_string_lossy();
 
         debug!("Adding file: {} ({})", relative.display(), path.display());
         let ctnt = fs::read(path)?;
@@ -61,15 +68,11 @@ impl<'a> WithRepo<'a, FlattenTree> {
 
         let line = TreeLine {
             kind: TreeLineKind::File,
-            name: relative
-                .iter()
-                .map(|part| part.to_string_lossy().into_owned())
-                .collect::<Vec<String>>()
-                .join("/"),
+            name: filename.to_string(),
             sha1: blob.sha1().into(),
         };
 
-        self.data.insert(line.name.clone(), line);
+        self.data.insert(filename.to_string(), line);
 
         Ok(self)
     }
@@ -88,9 +91,32 @@ impl<'a> WithRepo<'a, FlattenTree> {
             // skip the .gitignore s
             return Ok(self);
         }
+
+        let mut tree = self.wrap(MutableTree {
+            data: HashMap::new(),
+            save_object: self.save_object,
+        });
+
         for item in fs::read_dir(dir)? {
-            self.add_path(&item?.path())?;
+            tree.add_path(&item?.path())?;
         }
+
+        let tree = tree.freeze().map(|t| Object::Tree(t));
+        let dirname = dir.file_name().unwrap_or_default().to_string_lossy();
+
+        if self.save_object {
+            tree.save()?;
+        }
+
+        self.data.insert(
+            dirname.to_string(),
+            TreeLine {
+                kind: TreeLineKind::Tree,
+                name: dirname.to_string(),
+                sha1: tree.sha1().into(),
+            },
+        );
+
         Ok(self)
     }
 
@@ -99,7 +125,15 @@ impl<'a> WithRepo<'a, FlattenTree> {
         if path.is_file() {
             self.add_file(path)
         } else if path.is_dir() {
-            self.add_dir(path)
+            if path == self.repo.working_dir() {
+                for item in fs::read_dir(path)? {
+                    self.add_path(&item?.path())?;
+                }
+                Ok(self)
+            } else {
+                self.add_dir(path)
+            }
+            // self.add_dir(path)
         } else {
             Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
@@ -108,7 +142,7 @@ impl<'a> WithRepo<'a, FlattenTree> {
         }
     }
 
-    pub fn freeze(self) -> WithRepo<'a, Stage> {
-        WithRepo::new(self.repo, Stage(self.unwrap().data.into()))
+    pub fn freeze(self) -> WithRepo<'a, Tree> {
+        WithRepo::new(self.repo, self.unwrap().data.into())
     }
 }

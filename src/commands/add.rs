@@ -4,7 +4,7 @@ use clap::Args;
 use colored::Colorize;
 
 use crate::{
-    models::repo::Repository,
+    models::{repo::Repository, stage::Stage},
     services::stage::StageService,
 };
 
@@ -33,7 +33,7 @@ impl Exec for Add {
             stage.add_path(&path)?;
         }
 
-        stage.freeze().save()?;
+        stage.freeze().map(|t| Stage(t)).save()?;
 
         Ok(())
     }

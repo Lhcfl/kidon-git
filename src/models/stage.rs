@@ -13,20 +13,6 @@ use std::{
 
 /// Staging area is actually a special [Tree]  
 ///
-/// Notice that the stage tree will never contains another [Tree], which is the
-/// difference between a stage and a tree For example, a stage can contains a
-/// line like this:
-///
-/// ```txt
-/// 100644 blob 1234567890abcdef1234567890abcdef12345678    src/some_dir/file.txt
-/// ```
-///
-/// but a tree can only contains a line like this:
-///
-/// ```txt
-/// 040000 tree abcdef1234567890abcdef1234567890abcdef12    src
-/// ``````
-///
 /// See [Tree] for details
 ///
 /// ### Mutablity
