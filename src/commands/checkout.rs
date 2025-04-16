@@ -1,6 +1,7 @@
 use clap::Args;
 
 use super::Exec;
+use crate::{models::repo::Repository, services::branch::BranchService};
 
 #[derive(Debug, Args)]
 pub struct Checkout {
@@ -13,6 +14,13 @@ pub struct Checkout {
 
 impl Exec for Checkout {
     fn exec(&self) -> anyhow::Result<()> {
+        let repo= Repository::load()?;
+        let branch_name = &self.branch;
+        if self.create{
+            repo.create_branch(&branch_name)?;
+        }
+        // change branch to branch_name
+        // TODO 
         // TODO @leonard 可以把 services/branch 的 creation 用在这里
         panic!("checkout is not implemented")
     }

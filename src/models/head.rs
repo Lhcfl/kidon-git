@@ -23,7 +23,7 @@ pub struct Head {
 }
 
 impl Store for Head {
-    fn loaction(&self) -> PathBuf {
+    fn location(&self) -> PathBuf {
         Path::new("HEAD").to_path_buf()
     }
     serde_json_store!();

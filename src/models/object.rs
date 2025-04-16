@@ -113,13 +113,13 @@ impl DirContainer for Object {
 }
 
 impl Store for Object {
-    fn loaction(&self) -> PathBuf {
+    fn location(&self) -> PathBuf {
         let sha1 = self.sha1();
         let dir = sha1.chars().take(2).collect::<String>();
         Path::new(Self::DIRECTORY).join(dir).join(&sha1[2..])
     }
     fn store(&self, root: &std::path::Path) -> std::io::Result<()> {
-        let path = root.join(self.loaction());
+        let path = root.join(self.location());
         if let Some(parent) = path.parent() {
             // Safely ignores the error if the directory already exists
             let _ = std::fs::create_dir_all(parent);
