@@ -1,16 +1,15 @@
 //! Tree Services
 
-use super::mut_tree::MutableTree;
 use crate::{
     models::{
         object::Object,
-        repo::{Repository, WithRepo},
+        repo::WithRepo,
         tree::{Tree, TreeLine, TreeLineKind},
     },
     traits::Accessable,
 };
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     fmt::Display,
     io,
     path::Path,
