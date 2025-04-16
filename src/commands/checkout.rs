@@ -17,7 +17,7 @@ impl Exec for Checkout {
         let repo = Repository::load()?;
         let branch_name = &self.branch;
         if self.create {
-            repo.create_branch(&branch_name)?;
+            repo.create_branch(branch_name)?;
         }
         // change branch to branch_name
         // TODO

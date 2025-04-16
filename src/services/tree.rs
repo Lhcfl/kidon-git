@@ -13,7 +13,6 @@ use std::{
     collections::{HashMap, HashSet},
     fmt::Display,
     io,
-    path::Path,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
