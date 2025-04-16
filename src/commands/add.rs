@@ -33,7 +33,7 @@ impl Exec for Add {
             stage.add_path(&path)?;
         }
 
-        stage.freeze().map(|t| Stage(t)).save()?;
+        stage.freeze().map(Stage).save()?;
 
         Ok(())
     }

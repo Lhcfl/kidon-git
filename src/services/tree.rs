@@ -95,52 +95,6 @@ pub fn compare_trees(from: &WithRepo<Tree>, to: &WithRepo<Tree>) -> io::Result<V
     Ok(res)
 }
 
-impl WithRepo<'_, Tree> {
-    pub fn into_flatten(self) -> io::Result<HashMap<String, TreeLine>> {
-        let mut store = HashMap::new();
-        let prefix = Path::new("");
-        self.flatten_into(&mut store, prefix).unwrap();
-        Ok(store)
-    }
-
-    pub fn flatten_into(
-        self,
-        store: &mut HashMap<String, TreeLine>,
-        prefix: &Path,
-    ) -> io::Result<()> {
-        let repolike = self.wrap(());
-
-        for line in self.unwrap().objects.into_iter() {
-            match line.kind {
-                TreeLineKind::Tree => {
-                    repolike
-                        .wrap(Object::accessor(&line.sha1))
-                        .load()?
-                        .map(|t| t.cast_tree())
-                        .flatten_into(store, &prefix.join(&line.name))?;
-                }
-                _ => {
-                    let name_updated = prefix
-                        .join(line.name)
-                        .iter()
-                        .map(|part| part.to_string_lossy().into_owned())
-                        .collect::<Vec<String>>()
-                        .join("/");
-                    store.insert(
-                        name_updated.clone(),
-                        TreeLine {
-                            name: name_updated,
-                            ..line
-                        },
-                    );
-                }
-            }
-        }
-
-        Ok(())
-    }
-}
-
 impl Repository {
     /// get the working directory of the repository
     pub fn working_tree(&self) -> io::Result<WithRepo<Tree>> {

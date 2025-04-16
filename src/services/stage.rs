@@ -101,7 +101,7 @@ impl<'a> WithRepo<'a, MutableTree> {
             tree.add_path(&item?.path())?;
         }
 
-        let tree = tree.freeze().map(|t| Object::Tree(t));
+        let tree = tree.freeze().map(Object::Tree);
         let dirname = dir.file_name().unwrap_or_default().to_string_lossy();
 
         if self.save_object {
