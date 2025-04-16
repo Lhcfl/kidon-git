@@ -30,11 +30,10 @@ impl<'a> StageService<'a> for WithRepo<'a, Stage> {
     }
 }
 
+
 impl<'a> WithRepo<'a, MutableTree> {
-    /// add file to the stage
-    /// it WON'T save stage file (`.git/index`), until you save it.
-    pub fn add_file(&mut self, path: &Path) -> io::Result<&mut Self> {
-        let relative = path.strip_prefix(self.repo.working_dir()).map_err(|e| {
+    fn debug_util(&self,path:&Path, debug_msg:&str)-> io::Result<()>{
+       let relative = path.strip_prefix(self.repo.working_dir()).map_err(|e| {
             io::Error::new(
                 io::ErrorKind::InvalidInput,
                 format!(
@@ -43,7 +42,13 @@ impl<'a> WithRepo<'a, MutableTree> {
                     path.display()
                 ),
             )
-        })?;
+        })?; 
+        debug!("{} {} ({})",debug_msg, relative.display(), path.display());
+        Ok(())
+    }
+    /// add file to the stage
+    /// it WON'T save stage file (`.git/index`), until you save it.
+    pub fn add_file(&mut self, path: &Path) -> io::Result<&mut Self> {
         let filename = path
             .file_name()
             .ok_or(io::Error::new(
@@ -52,7 +57,7 @@ impl<'a> WithRepo<'a, MutableTree> {
             ))?
             .to_string_lossy();
 
-        debug!("Adding file: {} ({})", relative.display(), path.display());
+        self.debug_util(path,"Adding file")?;
         let ctnt = fs::read(path)?;
         let blob = Object::Blob(
             String::from_utf8(ctnt)
@@ -144,5 +149,57 @@ impl<'a> WithRepo<'a, MutableTree> {
 
     pub fn freeze(self) -> WithRepo<'a, Tree> {
         WithRepo::new(self.repo, self.unwrap().data.into())
+    }
+
+    pub fn remove_dir(&mut self, path: &Path) -> io::Result<&mut Self> {
+        let filename = path
+            .file_name()
+            .ok_or(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("file name is invalid: {}", path.display()),
+            ))?
+            .to_string_lossy();
+
+
+        if self.data.remove(&filename.to_string()).is_none() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                format!("file {} not found", filename),
+            ));
+        }
+
+        Ok(self)
+    }
+    pub fn remove_file(&mut self, path: &Path) -> io::Result<&mut Self> {
+        let filename = path
+            .file_name()
+            .ok_or(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("file name is invalid: {}", path.display()),
+            ))?
+            .to_string_lossy();
+
+        self.debug_util(path,"Removing file")?;
+
+        if self.data.remove(&filename.to_string()).is_none() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                format!("file {} not found", filename),
+            ));
+        }
+
+        Ok(self)
+    }
+    pub fn remove_path(&mut self, path: &Path) -> io::Result<&mut Self> {
+        if path.is_file() {
+            self.remove_file(path)
+        } else if path.is_dir() {
+            self.remove_dir(path)
+        } else {
+            Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                format!("path {} is not a file or directory", path.display()),
+            ))
+        }
     }
 }
