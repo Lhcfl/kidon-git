@@ -1,6 +1,6 @@
 //! Tree Services
 
-use super::stage::MutableTree;
+use super::mut_tree::MutableTree;
 use crate::{
     models::{
         object::Object,
