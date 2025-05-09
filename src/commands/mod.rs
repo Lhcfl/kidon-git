@@ -1,4 +1,12 @@
 //! Command interface
+//!
+//! The commands module is responsible for providing the user interface and
+//! interaction (in [Exec::exec]) with the clap library, a command-line library
+//! for Rust.
+//!
+//! You should not put any functionality other than simple validation and input
+//! and output in your implemantation of [Exec::exec]. Instead, they should be
+//! in [super::services] to increase reusability.
 
 use clap::Subcommand;
 use enum_dispatch::enum_dispatch;

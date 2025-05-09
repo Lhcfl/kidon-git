@@ -1,4 +1,5 @@
 //! Branch of the repository
+
 use super::object::ObjectSha1;
 use crate::{
     serde_json_store,
@@ -7,6 +8,8 @@ use crate::{
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
+/// A branch is a "pointer" to a [Object::Commit](super::commit::Commit), stored
+/// in `refs/heads/{branch_name}` or `refs/remotes/{remote_name}/{branch_name}`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Branch {
     pub remote: Option<String>,

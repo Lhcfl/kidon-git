@@ -7,6 +7,7 @@ use std::{
 
 use crate::traits::Store;
 
+/// Ignore patterns and files for the git repo
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Ignores(HashSet<String>);
 

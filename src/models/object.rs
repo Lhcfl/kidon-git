@@ -63,6 +63,14 @@ impl Display for ObjectSha1 {
     }
 }
 
+/// A git Object.
+///
+/// Git is a content-addressable filesystem. What does that mean? It means that
+/// at the core of Git is a simple key-value data store. What this means is that
+/// you can insert any kind of content into a Git repository, for which Git will
+/// hand you back a unique key you can use later to retrieve that content.
+///
+/// @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
 #[derive(Debug, Clone, Decode, Encode)]
 #[enum_dispatch(Sha1Able)]
 pub enum Object {

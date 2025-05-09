@@ -8,7 +8,19 @@ use sha1::Digest;
 
 #[derive(Debug, Clone, PartialEq, Eq, Decode, Encode)]
 pub enum Blob {
+    /// Binary data
+    ///
+    /// Some of files may not be a valid UTF-8 file, and we won't want to count
+    /// line differences of them
+    ///
+    /// Not all byte slices are valid [String]s, however: strings are required
+    /// to be valid UTF-8. If we store them in a [String], from_utf8_lossy()
+    /// will replace any invalid UTF-8 sequences with `U+FFFD REPLACEMENT
+    /// CHARACTER`, which looks like this: �
     Binary(Vec<u8>),
+    /// Text data
+    ///
+    /// To represent a valid UTF-8 file
     Text(String),
 }
 
@@ -44,6 +56,13 @@ impl Blob {
         }
     }
 
+    /// Converts a slice of bytes to a string, including invalid characters. Not
+    /// all [Blob]s are valid strings, however: strings are required to be valid
+    /// UTF-8. During this conversion, from_utf8_lossy() will replace any
+    /// invalid UTF-8 sequences with `U+FFFD REPLACEMENT CHARACTER`, which looks
+    /// like this: �
+    ///
+    /// So you may need check if the blob is a [Blob::Binary] first
     pub fn as_string(&self) -> Cow<str> {
         match self {
             Blob::Binary(data) => String::from_utf8_lossy(data),

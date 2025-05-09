@@ -15,6 +15,7 @@ use std::{
     path::PathBuf,
 };
 
+/// Repository, the entry of everything
 #[derive(Debug)]
 pub struct Repository {
     /// .git dir for the repository
