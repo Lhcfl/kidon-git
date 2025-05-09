@@ -113,17 +113,24 @@ impl BranchService for Repository {
     }
 
     fn checkout_branch(&self, name: &str) -> io::Result<()> {
-        // let branch = self.wrap(Branch::accessor(name));
-        // let branch = branch.load()?;
-        // if branch.is_none() {
-        //     return Err(io::Error::new(
-        //         io::ErrorKind::NotFound,
-        //         format!("branch {name} not found"),
-        //     ));
-        // }
-        // self.head().set_branch(name)?;
-        // Ok(())
-        // TODO
-        panic!("checkout branch is not implemented")
+        // Step 1: Check if the branch exists
+        if !self.branch_exists(name)? {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                format!("branch '{}' does not exist", name),
+            ));
+        }
+
+        // Step 2: Load the branch
+        let branch = self.wrap(Branch::accessor(&name)).load()?;
+
+        // Step 3: Update HEAD to point to the new branch
+        let mut head = self.head().clone();
+        head.branch_name = branch.full_name();
+        let head_wrap = self.wrap(head); // Save the modified Head object
+        head_wrap.save()?;
+
+        println!("Switched to branch '{}'", name);
+        Ok(())
     }
 }
