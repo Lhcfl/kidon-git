@@ -91,6 +91,16 @@ impl<T> DerefMut for WithRepo<'_, T> {
     }
 }
 
+impl<'r, T: Clone> WithRepo<'r, T> {
+    /// Clone the inner object
+    pub fn cloned(&self) -> WithRepo<'r, T> {
+        WithRepo {
+            repo: self.repo,
+            inner: self.inner.clone(),
+        }
+    }
+}
+
 impl<T> Display for WithRepo<'_, T>
 where
     T: Display,
