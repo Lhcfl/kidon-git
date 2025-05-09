@@ -16,12 +16,21 @@ impl Exec for Checkout {
     fn exec(&self) -> anyhow::Result<()> {
         let repo = Repository::load()?;
         let branch_name = &self.branch;
+
         if self.create {
             repo.create_branch(&branch_name)?;
         }
-        // change branch to branch_name
-        // TODO
-        // TODO @leonard 可以把 services/branch 的 creation 用在这里
-        panic!("checkout is not implemented")
+
+        // Check if the branch exists
+        if !repo.branch_exists(branch_name)? {
+            anyhow::bail!("pathspec '{branch_name}' did not match any file(s) known to git");
+
+        }
+
+        // Switch to the branch
+        repo.checkout_branch(branch_name)?;
+
+        println!("Switched to branch '{}'", branch_name);
+        Ok(())
     }
 }

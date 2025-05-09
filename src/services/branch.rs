@@ -1,4 +1,3 @@
-
 use crate::{
     models::{
         branch::Branch,
@@ -32,6 +31,8 @@ pub trait BranchService {
     fn create_branch(&self, branch_name: &str)
     -> Result<WithRepo<'_, Branch>, BranchCreationError>;
     fn delete_branch(&self, branch_name: &str) -> io::Result<()>;
+    fn branch_exists(&self, branch_name: &str) -> io::Result<bool>;
+    fn checkout_branch(&self, branch_name: &str) -> io::Result<()>;
 }
 
 impl BranchService for Repository {
@@ -105,5 +106,24 @@ impl BranchService for Repository {
         }
         branch.remove()?;
         Ok(())
+    }
+
+    fn branch_exists(&self, name: &str) -> io::Result<bool> {
+        Ok(self.list_branch()?.iter().any(|b| b == name))
+    }
+
+    fn checkout_branch(&self, name: &str) -> io::Result<()> {
+        // let branch = self.wrap(Branch::accessor(name));
+        // let branch = branch.load()?;
+        // if branch.is_none() {
+        //     return Err(io::Error::new(
+        //         io::ErrorKind::NotFound,
+        //         format!("branch {name} not found"),
+        //     ));
+        // }
+        // self.head().set_branch(name)?;
+        // Ok(())
+        // TODO
+        panic!("checkout branch is not implemented")
     }
 }
