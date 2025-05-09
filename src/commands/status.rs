@@ -4,7 +4,7 @@ use clap::Args;
 use colored::Colorize;
 
 use crate::{
-    models::{object::Object, repo::Repository},
+    models::{object::Object, repo::Repository, tree::Tree},
     services::tree::{ComparedKind, compare_trees},
     traits::Accessable,
 };
@@ -21,32 +21,34 @@ impl Exec for Status {
 
         println!("On branch {}", branch.name);
 
+        let working_tree = repo.working_tree()?;
         let stage_tree = repo.stage()?.map(|s| s.0);
-        let staging_change = if let Some(sha1) = &branch.head {
+        let head_tree = if let Some(sha1) = &branch.head {
             let head_commit = repo
                 .wrap(Object::accessor(sha1))
                 .load()?
                 .map(|c| c.cast_commit());
-            let head_tree = repo
-                .wrap(Object::accessor(&head_commit.tree))
-                .load()?
-                .map(|t| t.cast_tree());
 
-            let mut res = compare_trees(&head_tree, &stage_tree)?;
-            res.sort_by(|a, b| a.line.name.cmp(&b.line.name));
-            res
+            repo.wrap(Object::accessor(&head_commit.tree))
+                .load()?
+                .map(|t| t.cast_tree())
         } else {
-            println!("\nNo commits yet");
-            Vec::new()
+            println!("No commits yet\n");
+            repo.wrap(Tree::empty())
         };
 
-        if staging_change.is_empty().not() {
+        let mut staging_changes = compare_trees(&head_tree, &stage_tree)?;
+        staging_changes.sort_by(|a, b| a.line.name.cmp(&b.line.name));
+        let mut working_changes = compare_trees(&stage_tree, &working_tree)?;
+        working_changes.sort_by(|a, b| a.line.name.cmp(&b.line.name));
+
+        if staging_changes.is_empty().not() {
             println!(
                 "
 Changes to be committed:
   (use \"git restore --staged <file>...\" to unstage)"
             );
-            for diff in &staging_change {
+            for diff in &staging_changes {
                 match diff.kind {
                     ComparedKind::Modified => {
                         println!("{}", diff.to_string().yellow());
@@ -61,12 +63,7 @@ Changes to be committed:
             }
         }
 
-        let working_tree = repo.working_tree()?;
-        let mut working_change = compare_trees(&stage_tree, &working_tree)?;
-
-        working_change.sort_by(|a, b| a.line.name.cmp(&b.line.name));
-
-        let changes_not_staged_for_commit = working_change
+        let changes_not_staged_for_commit = working_changes
             .iter()
             .filter(|x| x.kind != ComparedKind::Added)
             .collect::<Vec<_>>();
@@ -93,7 +90,7 @@ Changes not staged for commit:
             }
         }
 
-        let untracked = working_change
+        let untracked = working_changes
             .iter()
             .filter(|x| x.kind == ComparedKind::Added)
             .collect::<Vec<_>>();
@@ -109,7 +106,7 @@ Untracked files:
             }
         }
 
-        if working_change.is_empty() && staging_change.is_empty() {
+        if working_changes.is_empty() && staging_changes.is_empty() {
             println!("nothing to commit, working tree clean");
         }
 

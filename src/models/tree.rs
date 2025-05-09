@@ -96,6 +96,10 @@ impl From<HashMap<String, TreeLine>> for Tree {
 }
 
 impl Tree {
+    pub fn empty() -> Self {
+        Tree { objects: vec![] }
+    }
+
     pub fn into_map(self) -> HashMap<String, TreeLine> {
         self.objects
             .into_iter()

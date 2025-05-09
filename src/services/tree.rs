@@ -1,16 +1,15 @@
 //! Tree Services
 
-use super::stage::MutableTree;
 use crate::{
     models::{
         object::Object,
-        repo::{Repository, WithRepo},
+        repo::WithRepo,
         tree::{Tree, TreeLine, TreeLineKind},
     },
     traits::Accessable,
 };
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashSet,
     fmt::Display,
     io,
     path::Path,
@@ -26,6 +25,13 @@ pub enum ComparedKind {
 pub struct ComparedLine {
     pub kind: ComparedKind,
     pub line: TreeLine,
+}
+
+impl ComparedLine {
+    fn prepent_parent(mut self, path: &Path) -> Self {
+        self.line.name = path.join(&self.line.name).to_string_lossy().to_string();
+        self
+    }
 }
 
 impl Display for ComparedLine {
@@ -44,8 +50,11 @@ impl Display for ComparedLine {
     }
 }
 
-/// 比较两个 tree
-pub fn compare_trees(from: &WithRepo<Tree>, to: &WithRepo<Tree>) -> io::Result<Vec<ComparedLine>> {
+fn compare_tree_with_path(
+    root: &Path,
+    from: &WithRepo<Tree>,
+    to: &WithRepo<Tree>,
+) -> io::Result<Vec<ComparedLine>> {
     let from_map = from.get_map();
     let to_map = to.get_map();
     let all_items = from_map
@@ -68,25 +77,38 @@ pub fn compare_trees(from: &WithRepo<Tree>, to: &WithRepo<Tree>) -> io::Result<V
                         .wrap(Object::accessor(&item_to.sha1))
                         .load()?
                         .map(|b| b.cast_tree());
-                    res.append(&mut (compare_trees(&a, &b)?));
+                    res.append(&mut compare_tree_with_path(
+                        &root.join(&item_from.name),
+                        &a,
+                        &b,
+                    )?);
                 } else {
-                    res.push(ComparedLine {
-                        kind: ComparedKind::Modified,
-                        line: item_to.clone(),
-                    });
+                    res.push(
+                        ComparedLine {
+                            kind: ComparedKind::Modified,
+                            line: item_to.clone(),
+                        }
+                        .prepent_parent(root),
+                    );
                 }
             }
             (Some(removed), None) => {
-                res.push(ComparedLine {
-                    kind: ComparedKind::Deleted,
-                    line: removed.clone(),
-                });
+                res.push(
+                    ComparedLine {
+                        kind: ComparedKind::Deleted,
+                        line: removed.clone(),
+                    }
+                    .prepent_parent(root),
+                );
             }
             (None, Some(added)) => {
-                res.push(ComparedLine {
-                    kind: ComparedKind::Added,
-                    line: added.clone(),
-                });
+                res.push(
+                    ComparedLine {
+                        kind: ComparedKind::Added,
+                        line: added.clone(),
+                    }
+                    .prepent_parent(root),
+                );
             }
             _ => {}
         }
@@ -95,16 +117,7 @@ pub fn compare_trees(from: &WithRepo<Tree>, to: &WithRepo<Tree>) -> io::Result<V
     Ok(res)
 }
 
-impl Repository {
-    /// get the working directory of the repository
-    pub fn working_tree(&self) -> io::Result<WithRepo<Tree>> {
-        let mut working_tree = self.wrap(MutableTree {
-            data: HashMap::new(),
-            save_object: true,
-        });
-
-        working_tree.add_path(self.working_dir())?;
-
-        Ok(working_tree.freeze())
-    }
+/// 比较两个 tree
+pub fn compare_trees(from: &WithRepo<Tree>, to: &WithRepo<Tree>) -> io::Result<Vec<ComparedLine>> {
+    compare_tree_with_path(Path::new(""), from, to)
 }
