@@ -1,14 +1,6 @@
 use crate::{
-    models::{
-        commit::{self, CommitBuilder},
-        object::{Object, Sha1Able},
-        repo::Repository,
-    },
-    services::{
-        commit::{CommitCreateResult, CommitService},
-        tree::compare_trees,
-    },
-    traits::Accessable,
+    models::repo::Repository,
+    services::commit::{CommitCreateResult, CommitService},
 };
 use clap::Args;
 

@@ -9,7 +9,7 @@ use crate::{
     traits::Accessable,
 };
 
-use super::tree::{ComparedKind, ComparedLine};
+use super::tree::ComparedLine;
 
 pub struct CommitCreationInfo {
     pub compared: Option<Vec<ComparedLine>>,
@@ -70,10 +70,10 @@ impl CommitService for Repository {
         branch_cloned.head = Some(commit_sha1.clone().into());
         branch_cloned.save()?;
 
-        return Ok(CommitCreateResult::Success(CommitCreationInfo {
+        Ok(CommitCreateResult::Success(CommitCreationInfo {
             compared,
             commit_sha1,
             branch: branch.unwrap(),
-        }));
+        }))
     }
 }
