@@ -1,3 +1,5 @@
+//! Ignore patterns and files for the git repo
+
 use std::{
     collections::HashSet,
     fs, io,

@@ -26,6 +26,7 @@ pub struct Commit {
     pub message: String,
 }
 
+/// Structure to create a new [Commit]
 pub struct CommitBuilder {
     pub tree: ObjectSha1,
     pub parent: Option<ObjectSha1>,
@@ -33,10 +34,24 @@ pub struct CommitBuilder {
 }
 
 impl Commit {
+    /// Commit time of the commit
     pub fn time(&self) -> DateTime<Utc> {
         DateTime::from_timestamp(self.timestamp.0, self.timestamp.1).expect("Invalid timestamp")
     }
 
+    /// Create a new commit with time = [Utc::now]
+    ///
+    /// ### Examples
+    ///
+    /// ```
+    /// let commit = Commit::new(CommitBuilder {
+    ///     tree: "abcd".into(),
+    ///     parent: None,
+    ///     message: "first commit"
+    /// });
+    /// // the commit is not saved until you call .save()
+    /// repo.wrap(commit).save()?
+    /// ```
     pub fn new(by: CommitBuilder) -> Commit {
         let now = Utc::now();
         Commit {

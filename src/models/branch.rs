@@ -12,8 +12,13 @@ use serde::{Deserialize, Serialize};
 /// in `refs/heads/{branch_name}` or `refs/remotes/{remote_name}/{branch_name}`
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Branch {
+    /// If the branch belongs to a remote
     pub remote: Option<String>,
+    /// Name of the branch, should not contain special characters (especially `/`)
+    ///
+    /// See [Branch::validate_name]
     pub name: String,
+    /// The latest commit of this branch
     pub head: Option<ObjectSha1>,
 }
 
@@ -23,6 +28,18 @@ impl Branch {
         let re = Regex::new(r"^[\w\.\-\d]+$").unwrap();
         re.is_match(name)
     }
+
+    /// Full name of a branch
+    ///
+    /// ### Examples
+    ///
+    /// ```rust
+    /// let branch = Branch { name: "main", remote: None, head: None };
+    /// assert_eq!(branch.full_name(), "main");
+    ///
+    /// let branch = Branch { name: "hotfix", remote: Some("origin"), head: None };
+    /// assert_eq!(branch.full_name(), "origin/hotfix");
+    /// ```
     pub fn full_name(&self) -> String {
         if let Some(remote) = &self.remote {
             format!("{}/{}", remote, self.name)

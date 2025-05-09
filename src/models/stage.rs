@@ -1,4 +1,4 @@
-//! stage files of the repo The stage files are used to store the changes that
+//! Staging area of the repo. The stage files are used to store the changes that
 //! are not yet committed.
 
 use super::tree::Tree;

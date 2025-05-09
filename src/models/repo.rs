@@ -1,4 +1,4 @@
-//! Repository Struct
+//! Repository, the entry of everything
 
 use super::branch::Branch;
 use super::ignores::Ignores;
@@ -15,7 +15,10 @@ use std::{
     path::PathBuf,
 };
 
-/// Repository, the entry of everything
+/// The repository is the entry point to the internal structure of git. Almost
+/// all operations, whether loading objects from disk or saving them, need to
+/// first obtain the repository structure and find out the location of the .git
+/// folder from the root of the repository structure.
 #[derive(Debug)]
 pub struct Repository {
     /// .git dir for the repository
@@ -63,10 +66,23 @@ impl<'r, T> WithRepo<'r, T> {
         }
     }
 
+    /// unpack self, and get the inner object
     pub fn unwrap(self) -> T {
         self.inner
     }
 
+    /// A `WithRepo<T>` is actually a
+    /// [Functor](https://www.adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html), you can apply a T -> U function to `WithRepo<T>` to get` WithRepo<U>` by mapping it.
+    ///
+    /// ### Example
+    ///
+    /// ```rust
+    /// let a = repo.wrap(1);
+    /// let b = a.map(|x| x + 1);
+    /// /// then b.unwrap() == 2
+    /// ```
+    ///
+    /// referance: [std::option::Option::map]
     pub fn map<F, U>(self, f: F) -> WithRepo<'r, U>
     where
         F: FnOnce(T) -> U,
@@ -93,7 +109,7 @@ impl<T> DerefMut for WithRepo<'_, T> {
 }
 
 impl<'r, T: Clone> WithRepo<'r, T> {
-    /// Clone the inner object
+    /// Clone the inner object, and returns the wrapped object
     pub fn cloned(&self) -> WithRepo<'r, T> {
         WithRepo {
             repo: self.repo,
@@ -115,11 +131,11 @@ impl<T> WithRepo<'_, T>
 where
     T: Store,
 {
-    /// Save the storeable object to the repository
+    /// Save the storeable object to disk
     pub fn save(&self) -> io::Result<()> {
         self.store(&self.repo.root)
     }
-    /// Delete the storeable object from the repository
+    /// Delete the storeable object from disk
     pub fn remove(&self) -> io::Result<()> {
         self.delete(&self.repo.root)
     }
@@ -130,7 +146,7 @@ where
     T: Accessable<By>,
     T: Store,
 {
-    /// Load the storeable object from the repository
+    /// Load the storeable object from disk
     pub fn load(&self) -> io::Result<WithRepo<'r, T>> {
         let inner = T::load(&self.repo.root.join(self.inner.path()))?;
         Ok(WithRepo {
