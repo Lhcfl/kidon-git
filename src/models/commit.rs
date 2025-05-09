@@ -2,7 +2,11 @@
 
 use std::fmt::Display;
 
-use super::object::{ObjectSha1, Sha1Able};
+use super::{
+    object::{ObjectSha1, Sha1Able},
+    tree::Tree,
+};
+
 use bincode::{Decode, Encode};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -21,9 +25,25 @@ pub struct Commit {
     pub message: String,
 }
 
+pub struct CommitBuilder {
+    pub tree: ObjectSha1,
+    pub parent: Option<ObjectSha1>,
+    pub message: String,
+}
+
 impl Commit {
     pub fn time(&self) -> DateTime<Utc> {
         DateTime::from_timestamp(self.timestamp.0, self.timestamp.1).expect("Invalid timestamp")
+    }
+
+    pub fn new(by: CommitBuilder) -> Commit {
+        let now = Utc::now();
+        Commit {
+            tree: by.tree,
+            parent: by.parent,
+            timestamp: (now.timestamp(), now.timestamp_subsec_nanos()),
+            message: by.message,
+        }
     }
 }
 
