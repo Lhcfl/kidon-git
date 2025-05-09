@@ -10,13 +10,13 @@ use std::path::{Path, PathBuf};
 
 use super::{branch::Branch, repo::WithRepo};
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub enum HeadKind {
     Local,
     Remote(String),
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct Head {
     pub kind: HeadKind,
     pub branch_name: String,
