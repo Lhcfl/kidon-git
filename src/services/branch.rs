@@ -97,8 +97,8 @@ impl BranchService for Repository {
     }
     fn delete_branch(&self, name: &str) -> io::Result<()> {
         let branch = self.wrap(Branch::accessor(&name));
-        let branch=branch.load()?;
-        if branch.full_name() == self.head().branch_name{
+        let branch = branch.load()?;
+        if branch.full_name() == self.head().branch_name {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "cannot delete current branch",
