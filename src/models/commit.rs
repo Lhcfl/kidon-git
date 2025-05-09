@@ -2,10 +2,7 @@
 
 use std::fmt::Display;
 
-use super::{
-    object::{ObjectSha1, Sha1Able},
-    tree::Tree,
-};
+use super::object::{ObjectSha1, Sha1Able};
 
 use bincode::{Decode, Encode};
 use chrono::{DateTime, Utc};

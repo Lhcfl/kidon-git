@@ -1,15 +1,12 @@
-use std::ops::Deref;
-
 use crate::{
     models::{
-        commit,
+        commit::{self, CommitBuilder},
         object::{Object, Sha1Able},
         repo::Repository,
     },
     services::tree::compare_trees,
     traits::Accessable,
 };
-use chrono::Utc;
 use clap::Args;
 
 use super::Exec;
@@ -58,7 +55,7 @@ impl Exec for Commit {
         // Step 4: Create commit object
         let tree = tree.map(Object::Tree);
         tree.save()?;
-        let commit = commit::Commit::new(commit::CommitBuilder {
+        let commit = commit::Commit::new(CommitBuilder {
             tree: tree.sha1().into(),
             parent: branch.head.clone(),
             message: message.to_string(),
