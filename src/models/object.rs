@@ -70,7 +70,7 @@ impl Display for ObjectSha1 {
 /// you can insert any kind of content into a Git repository, for which Git will
 /// hand you back a unique key you can use later to retrieve that content.
 ///
-/// @see https://git-scm.com/book/en/v2/Git-Internals-Git-Objects
+/// See <https://git-scm.com/book/en/v2/Git-Internals-Git-Objects>
 #[derive(Debug, Clone, Decode, Encode)]
 #[enum_dispatch(Sha1Able)]
 pub enum Object {
@@ -88,7 +88,7 @@ impl Object {
         }
     }
 
-    /// ### Panics
+    /// # Panics
     /// If the object is not a blob, the function will panic.
     pub fn cast_blob(self) -> Blob {
         match self {
@@ -97,7 +97,7 @@ impl Object {
         }
     }
 
-    /// ### Panics
+    /// # Panics
     /// If the object is not a tree, the function will panic.
     pub fn cast_tree(self) -> Tree {
         match self {
@@ -106,7 +106,7 @@ impl Object {
         }
     }
 
-    /// ### Panics
+    /// # Panics
     /// If the object is not a commit, the function will panic.
     pub fn cast_commit(self) -> Commit {
         match self {

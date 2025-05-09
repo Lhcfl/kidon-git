@@ -31,7 +31,7 @@ pub struct Repository {
 /// referance with the repository  
 /// This is designed to use in saving and loading the object from the repository  
 ///
-/// ### Usage:
+/// # Usage:
 ///   
 /// ```rust
 /// let head = repo.head(); // WithRepoPath<Head>
@@ -74,7 +74,7 @@ impl<'r, T> WithRepo<'r, T> {
     /// A `WithRepo<T>` is actually a
     /// [Functor](https://www.adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html), you can apply a T -> U function to `WithRepo<T>` to get` WithRepo<U>` by mapping it.
     ///
-    /// ### Example
+    /// # Example
     ///
     /// ```rust
     /// let a = repo.wrap(1);

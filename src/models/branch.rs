@@ -31,7 +31,7 @@ impl Branch {
 
     /// Full name of a branch
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```rust
     /// let branch = Branch { name: "main", remote: None, head: None };

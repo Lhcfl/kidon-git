@@ -41,7 +41,7 @@ impl Commit {
 
     /// Create a new commit with time = [Utc::now]
     ///
-    /// ### Examples
+    /// # Examples
     ///
     /// ```
     /// let commit = Commit::new(CommitBuilder {

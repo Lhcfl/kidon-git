@@ -15,12 +15,12 @@ use std::{
 ///
 /// See [Tree] for details
 ///
-/// ### Mutablity
+/// # Mutablity
 ///
 /// We don't allow directly [std::ops::DerefMut] for [Stage], because it's eazy
 /// to insert a dumplicated line into the stage, which is not an expected
-/// behavior. If you want to modify the stage, take the Tree to create a
-/// [StageMuter](crate::services::stage::StageMuter)
+/// behavior. If you want to modify the stage, take the Tree by call
+/// [crate::services::stage::StageService::into_muter]
 #[derive(Encode, Decode)]
 pub struct Stage(pub Tree);
 
