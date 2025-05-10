@@ -16,6 +16,7 @@ pub enum HeadKind {
     Remote(String),
 }
 
+/// Head is a repo's `HEAD` file, pointers to a [Branch]
 #[derive(Debug, PartialEq, Serialize, Deserialize, Clone)]
 pub struct Head {
     pub kind: HeadKind,

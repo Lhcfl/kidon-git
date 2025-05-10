@@ -1,3 +1,5 @@
+//! Useful traits
+
 use std::{
     io,
     marker::PhantomData,

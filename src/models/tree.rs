@@ -1,5 +1,6 @@
-//! A Tree stores the structure of a directory in a git repository. It contains
-//! a list of TreeLine objects, each representing a blob or another tree.
+//! A [Tree] stores the structure of a directory in a git repository. It
+//! contains a list of [TreeLine] objects, each representing a
+//! [Blob](super::blob::Blob) or another [Tree].
 
 use super::object::{ObjectSha1, Sha1Able};
 use bincode::{Decode, Encode};
@@ -25,6 +26,8 @@ impl Display for TreeLineKind {
     }
 }
 
+/// A line of [Tree]. Records a object with its associated mode, type, and
+/// filename.
 #[derive(Debug, Clone, PartialEq, Eq, Decode, Encode, Hash)]
 pub struct TreeLine {
     pub kind: TreeLineKind,
@@ -38,7 +41,10 @@ impl Display for TreeLine {
     }
 }
 
-/// A normal tree is like a folder in a file system. for example a tree can be
+/// A normal tree is like a folder in a file system. A single tree object
+/// contains one or more entries, each of which is the SHA-1 hash of a
+/// [Blob](super::blob::Blob) or subtree with its associated mode, type, and
+/// filename. For example, a tree can be
 ///
 /// ```txt
 /// 100644 blob 0c12d336241a22c6b954d6fafdc998b6d9fb6e17    .gitignore
