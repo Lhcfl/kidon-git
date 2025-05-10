@@ -41,13 +41,13 @@ impl Exec for Log {
                 "Date:   {}",
                 commit.time().naive_local().format("%Y-%m-%d %H:%M:%S")
             );
-            println!("");
+            println!();
             commit
                 .message
                 .split('\n')
                 .take(5)
                 .for_each(|s| println!("    {}", s));
-            println!("");
+            println!();
             next_sha1 = commit.parent;
         }
 
