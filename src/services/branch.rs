@@ -128,7 +128,18 @@ impl BranchService for Repository {
         // Step 2: Load the branch
         let branch = self.wrap(Branch::accessor(&name)).load()?;
 
+        if branch.head.is_none() {
+            // Handle empty branch
+            self.clear_working_directory()?;
+            let mut head = self.head().clone();
+            head.branch_name = branch.full_name();
+            let head = self.wrap(head);
+            head.save()?;
+            println!("Switched to empty branch '{}'", name);
+            return Ok(());
+        }
         // Step 3: Load the tree object of the branch's HEAD
+
         let head_commit_sha1 = branch.head.as_ref().ok_or_else(|| {
             io::Error::new(io::ErrorKind::InvalidData, "branch has no commits")
         })?;
