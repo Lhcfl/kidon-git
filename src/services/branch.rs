@@ -1,7 +1,9 @@
 use crate::{
     models::{
         branch::Branch,
-        repo::{Repository, WithRepo},
+        repo::{Repository, WithRepo}, tree::Tree,
+        object::{Object},
+        tree::TreeLineKind
     },
     traits::{Accessable, DirContainer},
 };
@@ -33,6 +35,8 @@ pub trait BranchService {
     fn delete_branch(&self, branch_name: &str) -> io::Result<()>;
     fn branch_exists(&self, branch_name: &str) -> io::Result<bool>;
     fn checkout_branch(&self, branch_name: &str) -> io::Result<()>;
+    fn clear_working_directory(&self) -> io::Result<()>;
+    fn apply_tree_to_working_directory(&self, tree: &Tree) -> io::Result<()>;
 }
 
 impl BranchService for Repository {
@@ -124,13 +128,102 @@ impl BranchService for Repository {
         // Step 2: Load the branch
         let branch = self.wrap(Branch::accessor(&name)).load()?;
 
-        // Step 3: Update HEAD to point to the new branch
+        // Step 3: Load the tree object of the branch's HEAD
+        let head_commit_sha1 = branch.head.as_ref().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::InvalidData, "branch has no commits")
+        })?;
+        let head_commit = self.wrap(Object::accessor(head_commit_sha1)).load()?.clone();
+        let tree_sha1 = head_commit.cast_commit().tree;
+        let tree = self.wrap(Object::accessor(&tree_sha1)).load()?.clone().cast_tree();
+
+        // Step 4: Clear the working directory
+        self.clear_working_directory()?;
+
+        // Step 5: Apply the tree to the working directory
+        self.apply_tree_to_working_directory(&tree)?;
+
+        // Step 6: Update HEAD to point to the new branch
         let mut head = self.head().clone();
         head.branch_name = branch.full_name();
-        let head_wrap = self.wrap(head); // Save the modified Head object
-        head_wrap.save()?;
+        let head = self.wrap(head); // Save the modified Head object
+        head.save()?;
 
         println!("Switched to branch '{}'", name);
         Ok(())
     }
+    fn clear_working_directory(&self) -> io::Result<()> {
+        for entry in std::fs::read_dir(&self.root)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_file() || path.is_symlink() {
+                std::fs::remove_file(path)?;
+            } else if path.is_dir() {
+                std::fs::remove_dir_all(path)?;
+            }
+        }
+        Ok(())
+    }
+    fn apply_tree_to_working_directory(&self, tree: &Tree) -> io::Result<()> {
+        for line in &tree.objects {
+            let path = self.root.join(&line.name);
+
+            match line.kind {
+                TreeLineKind::File | TreeLineKind::Executable => {
+                    // Step 1: Ensure parent directories exist
+                    if let Some(parent) = path.parent() {
+                        std::fs::create_dir_all(parent)?;
+                    }
+
+                    // Step 2: Check if the file already exists
+                    if path.exists() {
+                        println!("File '{}' already exists, overwriting.", path.display());
+                    }
+
+                    // Step 3: Write the file content to the working directory
+                    let blob = self
+                        .wrap(Object::accessor(&line.sha1))
+                        .load()?.clone()
+                        .cast_blob();
+                    std::fs::write(&path, blob.as_bytes()).map_err(|e| {
+                        io::Error::new(
+                            io::ErrorKind::Other,
+                            format!("Failed to write file '{}': {}", path.display(), e),
+                        )
+                    })?;
+                }
+                TreeLineKind::Symlink => {
+                    // Step 4: Handle symbolic links
+                    let blob = self
+                        .wrap(Object::accessor(&line.sha1))
+                        .load()?.clone()
+                        .cast_blob();
+                    let target = std::str::from_utf8(blob.as_bytes()).map_err(|e| {
+                        io::Error::new(
+                            io::ErrorKind::InvalidData,
+                            format!("Invalid symlink target for '{}': {}", path.display(), e),
+                        )
+                    })?;
+                    if path.exists() {
+                        std::fs::remove_file(&path)?; // Remove existing file or symlink
+                    }
+                    std::os::unix::fs::symlink(target, &path).map_err(|e| {
+                        io::Error::new(
+                            io::ErrorKind::Other,
+                            format!("Failed to create symlink '{}': {}", path.display(), e),
+                        )
+                    })?;
+                }
+                TreeLineKind::Tree => {
+                    // Step 5: Recursively apply subtrees
+                    let subtree = self
+                        .wrap(Object::accessor(&line.sha1))
+                        .load()?.clone()
+                        .cast_tree();
+                    self.apply_tree_to_working_directory(&subtree)?;
+                }
+            }
+        }
+        Ok(())
+    }
 }
+

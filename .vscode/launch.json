@@ -9,7 +9,7 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/kidon",
-            "args": ["commit", "-m", "commit5"],
+            "args": ["checkout", "main"],
             "cwd": "${workspaceFolder}",
             "stopOnEntry": false
         }
