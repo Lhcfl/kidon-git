@@ -2,6 +2,8 @@
 
 ラスト、きどん！
 
+[documentation](https://lhcfl.github.io/kidon-git/kidon_git/) 
+
 ### run
 
 ```
