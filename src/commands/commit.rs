@@ -1,6 +1,5 @@
 use crate::{
-    models::repo::Repository,
-    services::commit::{CommitCreateResult, CommitService},
+    models::repo::Repository, oj_output, services::commit::{CommitCreateResult, CommitService}
 };
 use clap::Args;
 
@@ -44,6 +43,8 @@ impl Exec for Commit {
                         println!("{line}");
                     }
                 }
+
+                oj_output!("{}", res.commit_sha1);
             }
             CommitCreateResult::NothingToCommit => {
                 println!("nothing to commit, working tree clean");

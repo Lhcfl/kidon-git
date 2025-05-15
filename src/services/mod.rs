@@ -12,3 +12,4 @@ pub mod mut_tree;
 pub mod repo;
 pub mod stage;
 pub mod tree;
+pub mod oj;
