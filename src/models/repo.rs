@@ -266,16 +266,9 @@ impl Repository {
 
         let head = head::Head {
             kind: head::HeadKind::Local,
-            branch_name: "main".to_string(),
+            branch_name: "master".to_string(),
         };
         head.store(&path)?;
-
-        let main_branch = Branch {
-            remote: None,
-            name: "main".to_string(),
-            head: None,
-        };
-        main_branch.store(&path)?;
 
         Self::load()
     }
@@ -283,6 +276,14 @@ impl Repository {
     /// get the head of the repository
     pub fn head(&self) -> WithRepo<&Head> {
         self.wrap(&self.head_)
+    }
+
+    pub fn head_mut(&mut self) -> &mut Head {
+        &mut self.head_
+    }
+
+    pub fn save_head(&self) -> io::Result<()> {
+        self.head_.store(&self.root)
     }
 
     /// get the staging index of the repository

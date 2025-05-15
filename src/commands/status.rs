@@ -17,15 +17,15 @@ pub struct Status {}
 impl Exec for Status {
     fn exec(&self) -> anyhow::Result<()> {
         let repo = Repository::load()?;
-        let branch = repo.head().branch().load()?;
+        let branch = repo.head().load_branch();
 
-        println!("On branch {}", branch.name);
+        println!("On branch {}", repo.head().branch_name);
 
         let working_tree = repo.working_tree()?;
         let stage_tree = repo.stage()?.map(|s| s.0);
-        let head_tree = if let Some(sha1) = &branch.head {
+        let head_tree = if let Ok(sha1) = branch.map(|b| b.unwrap().head) {
             let head_commit = repo
-                .wrap(Object::accessor(sha1))
+                .wrap(Object::accessor(&sha1))
                 .load()?
                 .map(|c| c.cast_commit());
 

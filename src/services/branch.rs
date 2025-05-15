@@ -1,7 +1,7 @@
 use crate::{
     models::{
-        branch::Branch, object::Object, repo::{Repository, WithRepo}, stage::Stage
-    }, services::{stage::StageService, tree::{compare_trees, ComparedKind}}, models::{Accessable, DirContainer}
+        branch::{Branch, EMPTY_BRANCH_HEAD_PLACEHOLDER}, object::Object, repo::{Repository, WithRepo}, stage::Stage, Accessable, DirContainer
+    }, services::{stage::StageService, tree::{compare_trees, ComparedKind}}
 };
 use std::io;
 
@@ -30,7 +30,7 @@ pub trait BranchService {
     -> Result<WithRepo<'_, Branch>, BranchCreationError>;
     fn delete_branch(&self, branch_name: &str) -> io::Result<()>;
     fn branch_exists(&self, branch_name: &str) -> io::Result<bool>;
-    fn checkout_branch(&self, branch_name: &str) -> io::Result<()>;
+    fn checkout_branch(&mut self, branch_name: &str) -> io::Result<()>;
 }
 
 impl BranchService for Repository {
@@ -85,14 +85,25 @@ impl BranchService for Repository {
         let Err(_) = self.wrap(Branch::accessor(&name)).load() else {
             return Err(BranchCreationError::AlreadyExists);
         };
+        
+        let Ok(current_branch) = self.head().load_branch() else {
+            return Ok(self.wrap(Branch {
+                remote: None,
+                name: name.to_string(),
+                head: EMPTY_BRANCH_HEAD_PLACEHOLDER.into(),
+            }));
+        };
+        
         let wrap = self.wrap(Branch {
             remote: None,
             name: name.to_string(),
-            head: self.head().branch().load()?.unwrap().head,
+            head: current_branch.unwrap().head,
         });
+
         wrap.save()?;
         Ok(wrap)
     }
+
     fn delete_branch(&self, name: &str) -> io::Result<()> {
         let branch = self.wrap(Branch::accessor(&name));
         let branch = branch.load()?;
@@ -110,7 +121,7 @@ impl BranchService for Repository {
         Ok(self.list_branch()?.iter().any(|b| b == name))
     }
 
-    fn checkout_branch(&self, name: &str) -> io::Result<()> {
+    fn checkout_branch(&mut self, name: &str) -> io::Result<()> {
         // Step 1: Check if the branch exists
         if !self.branch_exists(name)? {
             return Err(io::Error::new(
@@ -119,11 +130,18 @@ impl BranchService for Repository {
             ));
         }
 
+        let Ok(current_branch) = self.head().load_branch() else {
+            let head = self.head_mut();
+            head.branch_name = name.to_string();
+            self.save_head()?;
+            return Ok(());
+        };
+
         // Step 2: Load the branch
-        let branch = self.wrap(Branch::accessor(&name)).load()?;
+        let target_branch = self.wrap(Branch::accessor(&name)).load()?;
 
         // Step 3: Check if the branch has any commits
-        let target_commit_sha1 = branch.head.as_ref().unwrap();
+        let target_commit_sha1 = &target_branch.head;
 
         // Step 4: Load the target branch's tree
         let target_commit = self.wrap(Object::accessor(target_commit_sha1)).load()?.map(|t| t.cast_commit());
@@ -131,13 +149,7 @@ impl BranchService for Repository {
         let target_tree=self.wrap(target_tree);
 
         // Step 5: Load the current branch's tree
-        let binding = self.head().branch().load()?;
-        let current_commit_sha1 = binding.head.as_ref().ok_or_else(|| {
-            io::Error::new(
-                io::ErrorKind::InvalidData,
-                "current branch has no commits",
-            )
-        })?;
+        let current_commit_sha1 = &current_branch.head;
         let current_commit = self.wrap(Object::accessor(current_commit_sha1)).load()?.map(|t| t.cast_commit());
         let current_tree = self.wrap(Object::accessor(&current_commit.tree)).load()?.map(|t| t.cast_tree());
         let current_tree=self.wrap(current_tree);
@@ -182,12 +194,9 @@ impl BranchService for Repository {
         stage.freeze().map(Stage).save()?;
 
         // Step 8: Update HEAD to point to the new branch
-        let mut head = self.head().clone();
-        head.branch_name = branch.full_name();
-        let head = self.wrap(head);
-        head.save()?;
-
-        println!("Switched to branch '{name}'");
+        let head = self.head_mut();
+        head.branch_name = name.into();
+        self.save_head()?;
         Ok(())
     }
 }

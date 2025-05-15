@@ -24,7 +24,7 @@ impl Exec for Commit {
 
         match res {
             CommitCreateResult::Success(res) => {
-                let tip = if res.branch.head.is_none() {
+                let tip = if res.is_root {
                     " (root-commit) "
                 } else {
                     " "
@@ -32,7 +32,7 @@ impl Exec for Commit {
 
                 println!(
                     "[{}{tip}{}] {message}",
-                    res.branch.name,
+                    res.branch_name,
                     &res.commit_sha1[0..7]
                 );
 

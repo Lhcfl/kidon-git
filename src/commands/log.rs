@@ -16,12 +16,11 @@ pub struct Log {
 impl Exec for Log {
     fn exec(&self) -> anyhow::Result<()> {
         let repo = Repository::load()?;
-        let mut next_sha1 = repo.head().branch().load()?.head.clone();
+        let Ok(branch) = repo.head().load_branch() else {
+            anyhow::bail!("your current branch '{}' does not have any commits yet", repo.head().branch_name);
+        };
 
-        if next_sha1.is_none() {
-            println!("It is a new repository, no commit yet");
-            return Ok(());
-        }
+        let mut next_sha1 = Some(branch.unwrap().head);
 
         for _ in 1..self.number {
             let Some(sha1) = next_sha1 else {

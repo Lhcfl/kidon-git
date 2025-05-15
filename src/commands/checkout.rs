@@ -14,7 +14,7 @@ pub struct Checkout {
 
 impl Exec for Checkout {
     fn exec(&self) -> anyhow::Result<()> {
-        let repo = Repository::load()?;
+        let mut repo = Repository::load()?;
         let branch_name = &self.branch;
 
         if self.create {
