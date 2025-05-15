@@ -6,7 +6,7 @@ use colored::Colorize;
 use crate::{
     models::{object::Object, repo::Repository, tree::Tree},
     services::tree::{ComparedKind, compare_trees},
-    traits::Accessable,
+    models::Accessable,
 };
 
 use super::Exec;

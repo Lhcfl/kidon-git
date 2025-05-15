@@ -1,7 +1,7 @@
 use crate::{
     models::{
         branch::Branch, object::Object, repo::{Repository, WithRepo}, stage::Stage
-    }, services::{stage::StageService, tree::{compare_trees, ComparedKind}}, traits::{Accessable, DirContainer}
+    }, services::{stage::StageService, tree::{compare_trees, ComparedKind}}, models::{Accessable, DirContainer}
 };
 use std::io;
 
@@ -115,7 +115,7 @@ impl BranchService for Repository {
         if !self.branch_exists(name)? {
             return Err(io::Error::new(
                 io::ErrorKind::NotFound,
-                format!("branch '{}' does not exist", name),
+                format!("branch '{name}' does not exist"),
             ));
         }
 
@@ -126,7 +126,7 @@ impl BranchService for Repository {
         let target_commit_sha1 = branch.head.as_ref().ok_or_else(|| {
             io::Error::new(
                 io::ErrorKind::InvalidData,
-                format!("branch '{}' has no commits", name),
+                format!("branch '{name}' has no commits"),
             )
         })?;
 
@@ -192,7 +192,7 @@ impl BranchService for Repository {
         let head = self.wrap(head);
         head.save()?;
 
-        println!("Switched to branch '{}'", name);
+        println!("Switched to branch '{name}'");
         Ok(())
     }
 }

@@ -1,7 +1,7 @@
 use super::Exec;
 use crate::{
     models::{object::Object, repo::Repository},
-    traits::Accessable,
+    models::Accessable,
 };
 use clap::Args;
 use colored::Colorize;
@@ -46,7 +46,7 @@ impl Exec for Log {
                 .message
                 .split('\n')
                 .take(5)
-                .for_each(|s| println!("    {}", s));
+                .for_each(|s| println!("    {s}"));
             println!();
             next_sha1 = commit.parent;
         }

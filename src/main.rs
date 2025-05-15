@@ -1,7 +1,6 @@
 mod commands;
 mod models;
 mod services;
-mod traits;
 
 use clap::Parser;
 use colored::Colorize;
@@ -25,7 +24,7 @@ fn main() {
         .init()
         .unwrap();
 
-    debug!("Args: {:?}", args);
+    debug!("Args: {args:?}");
     debug!("Command: {:?}", args.command);
 
     if let Err(e) = args.command.exec() {

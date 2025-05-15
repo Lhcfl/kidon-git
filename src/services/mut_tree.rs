@@ -145,7 +145,7 @@ impl<'a> WithRepo<'a, MutableTree> {
         if self.data.remove(&filename.to_string()).is_none() {
             return Err(io::Error::new(
                 io::ErrorKind::NotFound,
-                format!("file {} not found", filename),
+                format!("file {filename} not found"),
             ));
         }
 
@@ -165,7 +165,7 @@ impl<'a> WithRepo<'a, MutableTree> {
         if self.data.remove(&filename.to_string()).is_none() {
             return Err(io::Error::new(
                 io::ErrorKind::NotFound,
-                format!("file {} not found", filename),
+                format!("file {filename} not found"),
             ));
         }
 

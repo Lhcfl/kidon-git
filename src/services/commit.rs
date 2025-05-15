@@ -6,7 +6,7 @@ use crate::{
         repo::Repository,
     },
     services::tree::compare_trees,
-    traits::Accessable,
+    models::Accessable,
 };
 
 use super::tree::ComparedLine;

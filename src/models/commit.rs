@@ -67,10 +67,10 @@ impl Display for Commit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match serde_json::to_string_pretty(self) {
             Ok(json) => {
-                write!(f, "{}", json)
+                write!(f, "{json}")
             }
             Err(e) => {
-                write!(f, "unexpected: failed to serialize the commit: {}", e)
+                write!(f, "unexpected: failed to serialize the commit: {e}")
             }
         }
     }

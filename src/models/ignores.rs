@@ -7,7 +7,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::traits::Store;
+use crate::models::Store;
 
 /// Ignore patterns and files for the git repo
 #[derive(Debug, Clone, PartialEq, Eq)]

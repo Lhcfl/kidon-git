@@ -1,7 +1,7 @@
 //! git objects
 
 use super::{blob::Blob, commit::Commit, tree::Tree};
-use crate::traits::{Accessable, DirContainer, Store};
+use crate::models::{Accessable, DirContainer, Store};
 use bincode::{Decode, Encode};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
@@ -155,9 +155,9 @@ impl Accessable<ObjectSha1> for Object {
 impl Display for Object {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Object::Blob(blob) => write!(f, "{}", blob),
-            Object::Tree(tree) => write!(f, "{}", tree),
-            Object::Commit(commit) => write!(f, "{}", commit),
+            Object::Blob(blob) => write!(f, "{blob}"),
+            Object::Tree(tree) => write!(f, "{tree}"),
+            Object::Commit(commit) => write!(f, "{commit}"),
         }
     }
 }

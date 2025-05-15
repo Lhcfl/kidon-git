@@ -19,7 +19,7 @@ fn list_branch() -> anyhow::Result<()> {
         if repo.head().branch_name == branch {
             println!("* {}", branch.green());
         } else {
-            println!("  {}", branch);
+            println!("  {branch}");
         }
     }
     Ok(())

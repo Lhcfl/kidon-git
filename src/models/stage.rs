@@ -2,7 +2,7 @@
 //! are not yet committed.
 
 use super::tree::Tree;
-use crate::traits::Store;
+use crate::models::Store;
 use bincode::{Decode, Encode};
 use std::{
     fmt::Display,

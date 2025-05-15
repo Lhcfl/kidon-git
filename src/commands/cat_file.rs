@@ -1,7 +1,7 @@
 use super::Exec;
 use crate::{
     models::{object::Object, repo::Repository},
-    traits::Accessable,
+    models::Accessable,
 };
 use clap::Args;
 
