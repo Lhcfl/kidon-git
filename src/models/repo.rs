@@ -1,6 +1,5 @@
 //! Repository, the entry of everything
 
-use super::branch::Branch;
 use super::ignores::Ignores;
 use super::stage::Stage;
 use super::{branch, head, object};

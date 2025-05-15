@@ -3,7 +3,7 @@
 
 use crate::{
     serde_json_store,
-    models::{Accessable, Accessor, Store},
+    models::{Accessable, Store},
 };
 use serde::{Deserialize, Serialize};
 use std::{io, path::{Path, PathBuf}};
