@@ -13,3 +13,4 @@ pub mod repo;
 pub mod stage;
 pub mod tree;
 pub mod oj;
+pub mod dump_tree;

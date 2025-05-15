@@ -123,16 +123,11 @@ impl BranchService for Repository {
         let branch = self.wrap(Branch::accessor(&name)).load()?;
 
         // Step 3: Check if the branch has any commits
-        let target_commit_sha1 = branch.head.as_ref().ok_or_else(|| {
-            io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("branch '{name}' has no commits"),
-            )
-        })?;
+        let target_commit_sha1 = branch.head.as_ref().unwrap();
 
         // Step 4: Load the target branch's tree
-        let target_commit = self.wrap(Object::accessor(target_commit_sha1)).load()?.clone().cast_commit();
-        let target_tree = self.wrap(Object::accessor(&target_commit.tree)).load()?.clone().cast_tree();
+        let target_commit = self.wrap(Object::accessor(target_commit_sha1)).load()?.map(|t| t.cast_commit());
+        let target_tree = self.wrap(Object::accessor(&target_commit.tree)).load()?.map(|t| t.cast_tree());
         let target_tree=self.wrap(target_tree);
 
         // Step 5: Load the current branch's tree
@@ -143,8 +138,8 @@ impl BranchService for Repository {
                 "current branch has no commits",
             )
         })?;
-        let current_commit = self.wrap(Object::accessor(current_commit_sha1)).load()?.clone().cast_commit();
-        let current_tree = self.wrap(Object::accessor(&current_commit.tree)).load()?.clone().cast_tree();
+        let current_commit = self.wrap(Object::accessor(current_commit_sha1)).load()?.map(|t| t.cast_commit());
+        let current_tree = self.wrap(Object::accessor(&current_commit.tree)).load()?.map(|t| t.cast_tree());
         let current_tree=self.wrap(current_tree);
 
         // Step 6: Compare the trees
