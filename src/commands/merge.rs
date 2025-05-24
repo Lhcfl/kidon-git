@@ -1,6 +1,7 @@
 use clap::Args;
-
-use super::Exec;
+use crate::models::{branch::Branch, repo, Accessable};
+use crate::services::merge::MergeSerivce;
+use super::{Exec};
 
 #[derive(Debug, Args)]
 pub struct Merge {
@@ -9,6 +10,12 @@ pub struct Merge {
 
 impl Exec for Merge {
     fn exec(&self) -> anyhow::Result<()> {
-        panic!("merge is not implemented")
+        let repo = repo::Repository::load()?;
+        let Ok(branch) = repo.wrap(Branch::accessor(&self.branch.as_str())).load() else {
+            anyhow::bail!("branch {} not found", self.branch);
+        };
+
+        repo.merge(&branch)?;
+        Ok(())
     }
 }
