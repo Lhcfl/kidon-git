@@ -11,3 +11,6 @@ cp target/release/rust-git rust-git/target/debug/rust-git
 
 mkdir ci_out
 mv rust-git ci_out/rust-git
+
+cd ci_out
+zip -r rust-git.zip rust-git
