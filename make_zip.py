@@ -44,8 +44,9 @@ with zipfile.ZipFile("rust-git.zip", 'w', zipfile.ZIP_DEFLATED) as ziph:
           ziph.write(abs_file_path, arcname)
     
     try:
-      ziph.write("target/release/rust-git", "target/release/rust-git")
-      ziph.write("target/debug/rust-git", "target/release/rust-git")
-    except FileNotFoundError:
-      print("No binary found in target/release, you should build it first.")
+      ziph.write("target/release/rust-git", os.path.join(abs_file_path, "target/release/rust-git"))
+      ziph.write("target/release/rust-git", os.path.join(abs_file_path, "target/debug/rust-git"))
+    except FileNotFoundError as e:
+      print("No binary found, you should build it first.")
+      print(e)
       exit(1)
