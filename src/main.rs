@@ -18,14 +18,14 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    SimpleLogger::new()
-        .with_colors(true)
-        .without_timestamps()
-        .init()
-        .unwrap();
+    // SimpleLogger::new()
+    //     .with_colors(true)
+    //     .without_timestamps()
+    //     .init()
+    //     .unwrap();
 
-    debug!("Args: {args:?}");
-    debug!("Command: {:?}", args.command);
+    // debug!("Args: {args:?}");
+    // debug!("Command: {:?}", args.command);
 
     if let Err(e) = args.command.exec() {
         println!("{}: {e}", "error".red());

@@ -1,7 +1,6 @@
 use super::Exec;
 use crate::{
-    models::{object::Object, repo::Repository},
-    models::Accessible,
+    console_output, models::{object::Object, repo::Repository, Accessible}
 };
 use clap::Args;
 
@@ -17,15 +16,15 @@ impl Exec for CatFile {
         match self.sha1.as_str() {
             "index" => {
                 let stage = repo.stage()?;
-                println!("{stage}")
+                console_output!("{stage}")
             }
             "working-tree" => {
                 let working_tree = repo.working_tree()?;
-                println!("{working_tree}")
+                console_output!("{working_tree}")
             }
             _ => {
                 let object = repo.wrap(Object::accessor(&self.sha1)).load()?;
-                println!("{object}");
+                console_output!("{object}");
             }
         }
         Ok(())

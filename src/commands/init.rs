@@ -1,6 +1,6 @@
 use clap::Args;
 
-use crate::models::repo::{Repository, RepositoryInitError};
+use crate::{console_output, models::repo::{Repository, RepositoryInitError}};
 
 use super::Exec;
 
@@ -11,7 +11,7 @@ impl Exec for Init {
     fn exec(&self) -> anyhow::Result<()> {
         match Repository::load() {
             Ok(repo) => {
-                println!(
+                console_output!(
                     "the git repository exists in {}",
                     repo.root.to_string_lossy()
                 );
@@ -27,7 +27,7 @@ impl Exec for Init {
 
         let repo = Repository::init()?;
 
-        println!(
+        console_output!(
             "successfully initialized git repo in {}",
             repo.root.to_string_lossy()
         );

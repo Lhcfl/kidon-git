@@ -30,7 +30,7 @@ impl Exec for Checkout {
         // Switch to the branch
         repo.checkout_branch(branch_name)?;
 
-        // println!("Switched to branch '{}'", branch_name);
+        // console_output!("Switched to branch '{}'", branch_name);
         Ok(())
     }
 }

@@ -1,6 +1,7 @@
 #!/bin/bash
 # 测试 rust-git 的 add 和 commit 功能
 # 创建⼀个空⽬录 test2
+rm -rf test2
 mkdir test2
 # 拷⻉ rust-git 到 test2 ⽬录
 cp tests/rust-git test2/
@@ -32,8 +33,8 @@ hash_suffix1=${hash1:2}
 hash_prefix2=${hash2:0:2}
 hash_suffix2=${hash2:2}
 # 检查 .git/objects ⽬录下是否存在对应的对象文件。如果文件不存在，则打印报错信息。
-if [ -f ".git/objects/$hash_prefix1/$hash_suffix1" ] && [ -f
-".git/objects/$hash_prefix2/$hash_suffix2" ]; then
+echo "checking: .kidon-git/objects/$hash_prefix1/$hash_suffix1"
+if [ -f ".kidon-git/objects/$hash_prefix1/$hash_suffix1" ] && [ -f ".kidon-git/objects/$hash_prefix2/$hash_suffix2" ]; then
  echo "Success!"
 else
  echo "The object file does not exist!"

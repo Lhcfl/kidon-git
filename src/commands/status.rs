@@ -4,9 +4,7 @@ use clap::Args;
 use colored::Colorize;
 
 use crate::{
-    models::{object::Object, repo::Repository, tree::Tree},
-    services::tree::{ComparedKind, compare_trees},
-    models::Accessible,
+    console_output, models::{object::Object, repo::Repository, tree::Tree, Accessible}, services::tree::{compare_trees, ComparedKind}
 };
 
 use super::Exec;
@@ -19,7 +17,7 @@ impl Exec for Status {
         let repo = Repository::load()?;
         let branch = repo.head().load_branch();
 
-        println!("On branch {}", repo.head().branch_name);
+        console_output!("On branch {}", repo.head().branch_name);
 
         let working_tree = repo.working_tree()?;
         let stage_tree = repo.stage()?.map(|s| s.0);
@@ -33,7 +31,7 @@ impl Exec for Status {
                 .load()?
                 .map(|t| t.cast_tree())
         } else {
-            println!("No commits yet\n");
+            console_output!("No commits yet\n");
             repo.wrap(Tree::empty())
         };
 
@@ -43,7 +41,7 @@ impl Exec for Status {
         working_changes.sort_by(|a, b| a.line.name.cmp(&b.line.name));
 
         if staging_changes.is_empty().not() {
-            println!(
+            console_output!(
                 "
 Changes to be committed:
   (use \"git restore --staged <file>...\" to unstage)"
@@ -51,13 +49,13 @@ Changes to be committed:
             for diff in &staging_changes {
                 match diff.kind {
                     ComparedKind::Modified => {
-                        println!("{}", diff.to_string().yellow());
+                        console_output!("{}", diff.to_string().yellow());
                     }
                     ComparedKind::Deleted => {
-                        println!("{}", diff.to_string().red());
+                        console_output!("{}", diff.to_string().red());
                     }
                     ComparedKind::Added => {
-                        println!("{}", diff.to_string().green());
+                        console_output!("{}", diff.to_string().green());
                     }
                 }
             }
@@ -69,7 +67,7 @@ Changes to be committed:
             .collect::<Vec<_>>();
 
         if changes_not_staged_for_commit.is_empty().not() {
-            println!(
+            console_output!(
                 "
 Changes not staged for commit:
   (use \"git add <file>...\" to update what will be committed)
@@ -78,13 +76,13 @@ Changes not staged for commit:
             for diff in changes_not_staged_for_commit {
                 match diff.kind {
                     ComparedKind::Modified => {
-                        println!("{}", diff.to_string().yellow());
+                        console_output!("{}", diff.to_string().yellow());
                     }
                     ComparedKind::Deleted => {
-                        println!("{}", diff.to_string().red());
+                        console_output!("{}", diff.to_string().red());
                     }
                     ComparedKind::Added => {
-                        println!("{}", diff.to_string().green());
+                        console_output!("{}", diff.to_string().green());
                     }
                 }
             }
@@ -96,18 +94,18 @@ Changes not staged for commit:
             .collect::<Vec<_>>();
 
         if untracked.is_empty().not() {
-            println!(
+            console_output!(
                 "
 Untracked files:
   (use \"git add <file>...\" to include in what will be committed)"
             );
             for diff in untracked {
-                println!("        {}", diff.line.name.green());
+                console_output!("        {}", diff.line.name.green());
             }
         }
 
         if working_changes.is_empty() && staging_changes.is_empty() {
-            println!("nothing to commit, working tree clean");
+            console_output!("nothing to commit, working tree clean");
         }
 
         Ok(())

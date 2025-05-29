@@ -1,5 +1,5 @@
 use super::Exec;
-use crate::{models::repo::Repository, services::branch::BranchService};
+use crate::{console_output, models::repo::Repository, services::branch::BranchService};
 use clap::Args;
 use colored::Colorize;
 
@@ -17,9 +17,9 @@ fn list_branch() -> anyhow::Result<()> {
     let branches = repo.list_branch()?;
     for branch in branches {
         if repo.head().branch_name == branch {
-            println!("* {}", branch.green());
+            console_output!("* {}", branch.green());
         } else {
-            println!("  {branch}");
+            console_output!("  {branch}");
         }
     }
     Ok(())

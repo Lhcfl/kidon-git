@@ -1,5 +1,5 @@
 use crate::{
-    models::repo::Repository, oj_output, services::commit::{CommitCreateResult, CommitService}
+    console_output, models::repo::Repository, oj_output, services::commit::{CommitCreateResult, CommitService}
 };
 use clap::Args;
 
@@ -30,7 +30,7 @@ impl Exec for Commit {
                     " "
                 };
 
-                println!(
+                console_output!(
                     "[{}{tip}{}] {message}",
                     res.branch_name,
                     &res.commit_sha1[0..7]
@@ -38,16 +38,16 @@ impl Exec for Commit {
 
                 // Log commit status
                 if let Some(compared) = res.compared {
-                    println!("{} file changed", compared.len());
+                    console_output!("{} file changed", compared.len());
                     for line in compared {
-                        println!("{line}");
+                        console_output!("{line}");
                     }
                 }
 
                 oj_output!("{}", res.commit_sha1);
             }
             CommitCreateResult::NothingToCommit => {
-                println!("nothing to commit, working tree clean");
+                console_output!("nothing to commit, working tree clean");
             }
         }
 

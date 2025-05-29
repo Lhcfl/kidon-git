@@ -4,8 +4,7 @@ use clap::Args;
 use colored::Colorize;
 
 use crate::{
-    models::{repo::Repository, stage::Stage},
-    services::stage::StageService,
+    console_output, models::{repo::Repository, stage::Stage}, services::stage::StageService
 };
 
 use super::Exec;
@@ -21,8 +20,8 @@ impl Exec for Add {
         let repo = Repository::load()?;
 
         if self.paths.is_empty() {
-            println!("Nothing specified, nothing added.");
-            println!("{}", "hint: Maybe you wanted to say 'git add .'?".yellow());
+            console_output!("Nothing specified, nothing added.");
+            console_output!("{}", "hint: Maybe you wanted to say 'git add .'?".yellow());
             return Ok(());
         }
 

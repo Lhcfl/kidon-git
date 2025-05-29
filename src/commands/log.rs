@@ -1,7 +1,6 @@
 use super::Exec;
 use crate::{
-    models::{object::Object, repo::Repository},
-    models::Accessible,
+    console_output, models::{object::Object, repo::Repository, Accessible}
 };
 use clap::Args;
 use colored::Colorize;
@@ -35,18 +34,18 @@ impl Exec for Log {
                 );
             };
 
-            println!("{} {}", "commit".yellow(), sha1);
-            println!(
+            console_output!("{} {}", "commit".yellow(), sha1);
+            console_output!(
                 "Date:   {}",
                 commit.time().naive_local().format("%Y-%m-%d %H:%M:%S")
             );
-            println!();
+            console_output!();
             commit
                 .message
                 .split('\n')
                 .take(5)
-                .for_each(|s| println!("    {s}"));
-            println!();
+                .for_each(|s| console_output!("    {s}"));
+            console_output!();
             next_sha1 = commit.parent;
         }
 
