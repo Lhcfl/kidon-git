@@ -3,6 +3,10 @@ name = "rust-git"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+default = []
+development = []
+
 [dependencies]
 anyhow = "1.0.97"
 base16ct = { version = "0.2.0", features = ["alloc"] }

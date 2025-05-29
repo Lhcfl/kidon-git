@@ -156,7 +156,10 @@ where
 }
 
 impl DirContainer for Repository {
+    #[cfg(feature = "development")]
     const DIRECTORY: &str = ".kidon-git";
+    #[cfg(not(feature = "development"))]
+    const DIRECTORY: &str = ".git";
 }
 
 #[derive(Debug)]
