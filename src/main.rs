@@ -6,7 +6,6 @@ use clap::Parser;
 use colored::Colorize;
 use commands::Exec;
 use log::debug;
-use simple_logger::SimpleLogger;
 
 #[derive(Debug, Parser)]
 #[command(version)]
@@ -17,6 +16,8 @@ struct Args {
 
 #[cfg(feature = "development")]
 fn dev_init() {
+    use simple_logger::SimpleLogger;
+    
     SimpleLogger::new()
         .with_colors(true)
         .without_timestamps()

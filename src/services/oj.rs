@@ -11,9 +11,11 @@ macro_rules! oj_output {
 #[macro_export]
 macro_rules! console_output {
     ($($arg:tt)*) => {
-        // the oj checkes stderr
-        if false {
-            println!($($arg)*);    
+        {
+            #[cfg(feature = "development")]
+            {
+                println!($($arg)*);
+            }
         }
     };
 }
