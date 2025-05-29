@@ -32,6 +32,9 @@ jobs:
         path: ci_out/rust-git.zip
         overwrite: true
 
+    - name: miao
+      run: rm ci_out/rust-git.zip
+
     - name: 📦 Upload Artifact (test)
       uses: actions/upload-artifact@v4
       with:
