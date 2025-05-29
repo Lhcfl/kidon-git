@@ -1,0 +1,40 @@
+name: Build and Package Rust Project
+
+on:
+  push:
+    branches: [main]  # 或者你想自动执行的分支
+  workflow_dispatch:  # 手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout repo
+      uses: actions/checkout@v4
+
+    - name: 🦀 Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: 📄 Configure cache
+      uses: Swatinem/rust-cache@v2
+
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+
+    - name: 🚧 Install Python deps (if needed)
+      run: pip install -r requirements.txt || true
+
+    - name: 🛠 Build Release
+      run: cargo build --release
+    
+    - name: 📦 Generate Zip
+      run: python3 make-zip.py
+
+    - name: 📦 Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: rust-git-zip
+        path: rust-git.zip
