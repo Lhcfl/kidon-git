@@ -1,7 +1,7 @@
 //! git objects
 
 use super::{blob::Blob, commit::Commit, tree::Tree};
-use crate::models::{Accessable, DirContainer, Store};
+use crate::models::{Accessible, DirContainer, Store};
 use bincode::{Decode, Encode};
 use enum_dispatch::enum_dispatch;
 use serde::{Deserialize, Serialize};
@@ -145,7 +145,7 @@ impl Store for Object {
     }
 }
 
-impl Accessable<ObjectSha1> for Object {
+impl Accessible<ObjectSha1> for Object {
     fn path_of(by: &ObjectSha1) -> PathBuf {
         let (car, cdr) = by.splited();
         Path::new(Self::DIRECTORY).join(car).join(cdr)

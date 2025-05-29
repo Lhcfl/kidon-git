@@ -5,7 +5,7 @@ use crate::{
         repo::Repository,
     },
     services::tree::compare_trees,
-    models::Accessable,
+    models::Accessible,
 };
 
 use super::tree::ComparedLine;

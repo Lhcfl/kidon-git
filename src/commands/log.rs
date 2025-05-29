@@ -1,7 +1,7 @@
 use super::Exec;
 use crate::{
     models::{object::Object, repo::Repository},
-    models::Accessable,
+    models::Accessible,
 };
 use clap::Args;
 use colored::Colorize;

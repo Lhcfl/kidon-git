@@ -6,7 +6,7 @@ use crate::{
         repo::WithRepo,
         tree::{Tree, TreeLine, TreeLineKind},
     },
-    models::Accessable,
+    models::Accessible,
 };
 use std::{
     collections::HashSet,

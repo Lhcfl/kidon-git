@@ -1,6 +1,6 @@
 use crate::{
     models::{
-        branch::{Branch, EMPTY_BRANCH_HEAD_PLACEHOLDER}, object::Object, repo::{Repository, WithRepo}, stage::Stage, Accessable, DirContainer
+        branch::{Branch, EMPTY_BRANCH_HEAD_PLACEHOLDER}, object::Object, repo::{Repository, WithRepo}, stage::Stage, Accessible, DirContainer
     }, services::{stage::StageService, tree::{compare_trees, ComparedKind}}
 };
 use std::io;

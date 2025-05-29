@@ -1,7 +1,7 @@
 //! Models of git
 //!
 //! models represent entities that will eventually be stored in the file system
-//! (they are [Store](crate::models::Store)s) or need to be kept in memory at
+//! (they are [Store](Store)s) or need to be kept in memory at
 //! runtime. You should not put specific interactive functions here except
 //! loading and saving from disk.
 
@@ -72,18 +72,18 @@ macro_rules! serde_json_store {
     };
 }
 
-/// Wraped the accessor to the storeable object
+/// Wrapped the accessor to the storable object
 pub struct Accessor<'a, By, T>
 where
     T: Store,
-    T: Accessable<By>,
+    T: Accessible<By>,
 {
     by: &'a By,
     _will_into: PhantomData<T>,
 }
 
 /// The trait for the object that can be accessed by the accessor
-pub trait Accessable<By>
+pub trait Accessible<By>
 where
     Self: Store,
 {
@@ -101,7 +101,7 @@ where
 impl<By, T> Accessor<'_, By, T>
 where
     T: Store,
-    T: Accessable<By>,
+    T: Accessible<By>,
 {
     pub fn path(&self) -> PathBuf {
         T::path_of(self.by)

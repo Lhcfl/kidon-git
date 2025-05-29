@@ -3,7 +3,7 @@
 use super::object::ObjectSha1;
 use crate::{
     serde_json_store,
-    models::{Accessable, DirContainer, Store},
+    models::{Accessible, DirContainer, Store},
 };
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -83,13 +83,13 @@ fn path_of(by: &str) -> std::path::PathBuf {
     }
 }
 
-impl Accessable<&str> for Branch {
+impl Accessible<&str> for Branch {
     fn path_of(by: &&str) -> std::path::PathBuf {
         path_of(by)
     }
 }
 
-impl Accessable<String> for Branch {
+impl Accessible<String> for Branch {
     fn path_of(by: &String) -> std::path::PathBuf {
         path_of(by)
     }

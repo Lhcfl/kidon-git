@@ -3,7 +3,7 @@
 use super::ignores::Ignores;
 use super::stage::Stage;
 use super::{branch, head, object};
-use crate::models::{Accessable, Accessor, DirContainer};
+use crate::models::{Accessible, Accessor, DirContainer};
 use crate::{models::head::Head, models::Store};
 use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
@@ -27,7 +27,7 @@ pub struct Repository {
 }
 
 /// A wrapper, like a [Box] but not dynamic, for any object to store the
-/// referance with the repository  
+/// reference with the repository  
 /// This is designed to use in saving and loading the object from the repository  
 ///
 /// # Usage:
@@ -142,7 +142,7 @@ where
 
 impl<'r, By, T> WithRepo<'r, Accessor<'_, By, T>>
 where
-    T: Accessable<By>,
+    T: Accessible<By>,
     T: Store,
 {
     /// Load the storeable object from disk

@@ -1,5 +1,5 @@
 use clap::Args;
-use crate::models::{branch::Branch, repo, Accessable};
+use crate::models::{branch::Branch, repo, Accessible};
 use crate::services::merge::MergeSerivce;
 use super::{Exec};
 
