@@ -10,4 +10,4 @@ cp target/release/rust-git rust-git/target/release/rust-git
 cp target/release/rust-git rust-git/target/debug/rust-git
 
 mkdir ci_out
-mv -r rust-git ci_out/rust-git
+mv rust-git ci_out/rust-git
