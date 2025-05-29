@@ -19,22 +19,14 @@ jobs:
     - name: 📄 Configure cache
       uses: Swatinem/rust-cache@v2
 
-    - name: 🐍 Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.x"
-
-    - name: 🚧 Install Python deps (if needed)
-      run: pip install -r requirements.txt || true
-
     - name: 🛠 Build Release
       run: cargo build --release
     
     - name: 📦 Generate Zip
-      run: python3 make_zip.py
+      run: bash ci_make_zip.sh
 
     - name: 📦 Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: rust-git-zip
-        path: rust-git.zip
+        name: rust-git
+        path: rust-git
