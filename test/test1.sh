@@ -7,7 +7,7 @@ cp tests/rust-git test2/
 # 拷⻉⾃带的 test.png 图片到 test2 ⽬录
 # 请注意，除了图片，也需要考虑空文件哦。
 # 请注意，除了图片，也需要考虑空文件哦。
-cp tests/test.png test2/
+cp tests/test.png test2/git.png
 # 进入 test2 ⽬录
 cd test2
 # 执⾏ rust-git init
