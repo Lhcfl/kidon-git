@@ -1,41 +1,42 @@
 #!/bin/bash
-# 测试 rust-git 的 branch 和 checkout 功能
-# 创建⼀个空⽬录 test5
-mkdir test5
-# 拷⻉ rust-git 到 test5 ⽬录
-cp tests/rust-git test5/
-# 进入 test5 ⽬录
-cd test5
+# 测试 rust-git 的 add 和 commit 功能
+# 创建⼀个空⽬录 test2
+rm -rf test2
+mkdir test2
+# 拷⻉ rust-git 到 test2 ⽬录
+cp tests/rust-git test2/
+# 拷⻉⾃带的 test.png 图片到 test2 ⽬录
+# 请注意，除了图片，也需要考虑空文件哦。
+# 请注意，除了图片，也需要考虑空文件哦。
+cp tests/test.png test2/git.png
+# 进入 test2 ⽬录
+cd test2
 # 执⾏ rust-git init
 ./rust-git init
-# 创建文件 test.txt 并添加内容
-echo "1" > test.txt
 # 执⾏ rust-git add 和 rust-git commit
-./rust-git add test.txt
-hash=$(/bin/bash -c './rust-git commit -m "Initial commit" 2>&1')
-# 创建 feature 和 hotfix 分⽀。可能会同时创建多个分⽀
-./rust-git branch feature
-./rust-git branch hotfix
-# 切换到 feature 分⽀
-./rust-git checkout feature
-# 验证分⽀切换是否成功。请注意，⼀定要及时更新.git/HEAD内容，否则直接报错退出。
-if ! grep -q "ref: refs/heads/feature" ".kidon-git/HEAD"; then
- echo "Failed to switch to feature branch"
+./rust-git add git.png
+hash1=$(/bin/bash -c './rust-git commit -m "add png file" 2>&1')
+# 添加第⼆个文件
+# 创建文件 test1.txt 并添加内容
+echo "Hello, Rust!" > test1.txt
+# 执⾏ git add 和 git commit
+./rust-git add test1.txt
+hash2=$(./rust-git commit -m "Add test file" 2>&1)
+# 检查是否成功获取哈希值
+if [ -z "$hash1" ] || [ -z "$hash2" ]; then
+ echo "Commit hash is empty!"
  exit 1
 fi
-# 切换到 hotfix 分⽀
-./rust-git checkout hotfix
-# 验证分⽀切换是否成功
-if ! grep -q "ref: refs/heads/hotfix" ".kidon-git/HEAD"; then
- echo "Failed to switch to hotfix branch"
- exit 1
-fi
-# 输出成功信息
-echo "Success!"
-# 请思考，如果切换到不存在的分⽀，应该如何处理。我们假设默认的分⽀是master分⽀哦。
-# 尝试切换到不存在的分⽀
-message=$(./rust-git checkout non-existent 2>&1)
-# 验证当前分⽀是否仍为 master
-if grep -q "ref: refs/heads/master" ".kidon-git/HEAD"; then
+# 提取哈希值的前两位和后⾯的位数。请注意，⼀定要只返回hash值。
+hash_prefix1=${hash1:0:2}
+hash_suffix1=${hash1:2}
+hash_prefix2=${hash2:0:2}
+hash_suffix2=${hash2:2}
+# 检查 .git/objects ⽬录下是否存在对应的对象文件。如果文件不存在，则打印报错信息。
+echo "checking: .kidon-git/objects/$hash_prefix1/$hash_suffix1"
+if [ -f ".kidon-git/objects/$hash_prefix1/$hash_suffix1" ] && [ -f ".kidon-git/objects/$hash_prefix2/$hash_suffix2" ]; then
  echo "Success!"
+else
+ echo "The object file does not exist!"
+ exit 1
 fi
