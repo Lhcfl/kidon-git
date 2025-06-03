@@ -4,6 +4,7 @@ use crate::{
     }, services::{stage::StageService, tree::{compare_trees, ComparedKind}}
 };
 use std::io;
+use crate::models::commit::Commit;
 
 pub enum BranchCreationError {
     AlreadyExists,

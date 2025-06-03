@@ -2,12 +2,14 @@
 
 use std::fmt::Display;
 
-use super::object::{ObjectSha1, Sha1Able};
+use super::object::{Object, ObjectSha1, Sha1Able};
 
 use bincode::{Decode, Encode};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sha1::Digest;
+use crate::models::Accessible;
+use crate::models::repo::Repository;
 
 /// A git commit, contains commit information, and some "pointers"
 /// ([ObjectSha1]) to its file [Tree](super::tree::Tree), and its parent commit
@@ -60,6 +62,22 @@ impl Commit {
             timestamp: (now.timestamp(), now.timestamp_subsec_nanos()),
             message: by.message,
         }
+    }
+    pub fn get_parent_commit(&self) -> anyhow::Result<Commit> {
+        // This function should find the parent commit of the current commit.
+        // The parent commit is the most recent commit before the current one.
+        let repo = Repository::load()?;
+        let Some(parent_sha1) = &self.parent else{
+            anyhow::bail!("this commit has no parent, it is the first commit");
+        };
+        let obj = repo.wrap(Object::accessor(parent_sha1)).load()?.unwrap();
+        let Object::Commit(parent_commit) = obj else {
+            anyhow::bail!(
+                    "bad object type: object {parent_sha1} is not a commit, but a {}",
+                    obj.object_type()
+                );
+        };
+        Ok(parent_commit)
     }
 }
 

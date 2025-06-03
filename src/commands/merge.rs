@@ -1,6 +1,6 @@
 use clap::Args;
 use crate::models::{branch::Branch, repo, Accessible};
-use crate::services::merge::MergeSerivce;
+use crate::services::merge::MergeService;
 use super::{Exec};
 
 #[derive(Debug, Args)]

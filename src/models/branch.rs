@@ -1,12 +1,14 @@
 //! Branch of the repository
 
-use super::object::ObjectSha1;
+use super::object::{Object, ObjectSha1};
 use crate::{
     serde_json_store,
     models::{Accessible, DirContainer, Store},
 };
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use crate::models::commit::Commit;
+use crate::models::repo::Repository;
 
 /// A branch is a "pointer" to a [Object::Commit](super::commit::Commit), stored
 /// in `refs/heads/{branch_name}` or `refs/remotes/{remote_name}/{branch_name}`
@@ -20,6 +22,21 @@ pub struct Branch {
     pub name: String,
     /// The latest commit of this branch
     pub head: ObjectSha1,
+}
+
+impl Branch {
+    pub(crate) fn get_current_commit(&self) -> anyhow::Result<Commit> {
+        let repo = Repository::load()?;
+        let sha1 = &self.head;
+        let obj = repo.wrap(Object::accessor(sha1)).load()?.unwrap();
+        let Object::Commit(commit) = obj else {
+            anyhow::bail!(
+                "bad object type: object {sha1} is not a commit, but a {}",
+                obj.object_type()
+            );
+        };
+        Ok(commit)
+    }
 }
 
 pub const EMPTY_BRANCH_HEAD_PLACEHOLDER : &str = "empty_branch_head_placeholder";
