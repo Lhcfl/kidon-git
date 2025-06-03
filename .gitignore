@@ -5,3 +5,4 @@ kidon
 test_bash.txt
 .idea
 rust-git.zip
+test/**/rust-git
