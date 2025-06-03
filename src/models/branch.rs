@@ -24,21 +24,6 @@ pub struct Branch {
     pub head: ObjectSha1,
 }
 
-impl Branch {
-    pub(crate) fn get_current_commit(&self) -> anyhow::Result<Commit> {
-        let repo = Repository::load()?;
-        let sha1 = &self.head;
-        let obj = repo.wrap(Object::accessor(sha1)).load()?.unwrap();
-        let Object::Commit(commit) = obj else {
-            anyhow::bail!(
-                "bad object type: object {sha1} is not a commit, but a {}",
-                obj.object_type()
-            );
-        };
-        Ok(commit)
-    }
-}
-
 pub const EMPTY_BRANCH_HEAD_PLACEHOLDER : &str = "empty_branch_head_placeholder";
 
 impl Branch {

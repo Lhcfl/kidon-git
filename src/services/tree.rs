@@ -1,5 +1,6 @@
 //! Tree Services
 
+use crate::models::object::Sha1Able;
 use crate::{
     models::Accessible,
     models::{
@@ -9,9 +10,8 @@ use crate::{
     },
 };
 use std::collections::HashMap;
-use std::{collections::HashSet, fmt::Display, io, path::Path};
 use std::io::ErrorKind::ConnectionAborted;
-use crate::models::object::Sha1Able;
+use std::{collections::HashSet, fmt::Display, io, path::Path};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ComparedKind {
@@ -189,22 +189,40 @@ pub fn auto_merge_trees(
             }
 
             (_, Some(o), Some(t)) if o.sha1 != t.sha1 => {
-                // Conflict: o!=t 
-                if o.kind!= t.kind {
-                    anyhow::bail!("Conflict: different kinds of objects, o: {}, t: {}", o.kind, t.kind);
+                // Conflict: o!=t
+                if o.kind != t.kind {
+                    anyhow::bail!(
+                        "Conflict: different kinds of objects, o: {}, t: {}",
+                        o.kind,
+                        t.kind
+                    );
                 }
                 if o.kind == TreeLineKind::Tree {
                     // 处理子目录冲突
-                    let o_tree = ours.wrap(Object::accessor(&o.sha1)).load()?.unwrap().cast_tree();
-                    let t_tree = theirs.wrap(Object::accessor(&t.sha1)).load()?.unwrap().cast_tree();
+                    let o_tree = ours
+                        .wrap(Object::accessor(&o.sha1))
+                        .load()?
+                        .unwrap()
+                        .cast_tree();
+                    let t_tree = theirs
+                        .wrap(Object::accessor(&t.sha1))
+                        .load()?
+                        .unwrap()
+                        .cast_tree();
                     // ... right?? @linca
-                    let (merged_subtree, sub_conflicts) =
-                        auto_merge_trees(&base.wrap(Object::Tree(o_tree.clone()).try_into()?), &ours.wrap(Object::Tree(o_tree)), &theirs.wrap(Object::Tree(t_tree)))?;
-                    merged_map.insert(item.clone(), TreeLine {
-                        name: item.clone(),
-                        kind: TreeLineKind::Tree,
-                        sha1: merged_subtree.sha1().into(),
-                    });
+                    let (merged_subtree, sub_conflicts) = auto_merge_trees(
+                        &base.wrap(o_tree.clone()),
+                        &ours.wrap(o_tree),
+                        &theirs.wrap(t_tree),
+                    )?;
+                    merged_map.insert(
+                        item.clone(),
+                        TreeLine {
+                            name: item.clone(),
+                            kind: TreeLineKind::Tree,
+                            sha1: merged_subtree.sha1().into(),
+                        },
+                    );
                     conflicts.extend(sub_conflicts);
                     continue;
                 }
@@ -252,35 +270,41 @@ fn handle_conflict(
     // 处理冲突，返回冲突信息
     match o.kind {
         TreeLineKind::File => {
-            let a= ours
+            let a = ours
                 .wrap(Object::accessor(&o.sha1))
                 .load()?
                 .map(|a| a.cast_blob());
-            let a_lines=a.as_string().lines();
+            let a_str = a.as_string();
+            let a_lines = a_str.lines();
             let b = theirs
                 .wrap(Object::accessor(&t.sha1))
                 .load()?
                 .map(|b| b.cast_blob());
-            let b_lines :Vec<&str> = b.as_string().lines().collect();
-            let mut conflicting =false;
-            let mut current_conflict=Conflict{
+            let b_str = b.as_string();
+            let b_lines = b_str.lines();
+            let mut conflicting = false;
+            let mut current_conflict = Conflict {
                 file: o.name.clone(),
                 line_start: 0,
                 line_end: 0,
             };
-            for (i, line) in a_lines.enumerate() {
-                if line != *b_lines.get(i).unwrap_or(&"") { // has conflict
-                    if !conflicting {   // starting conflict block
-                        conflicting=true;
-                        current_conflict.line_start=i+1;
+
+            for (index, (a_line, b_line)) in a_lines.zip(b_lines).enumerate() {
+                if a_line != b_line {
+                    // has conflict
+                    if !conflicting {
+                        // starting conflict block
+                        conflicting = true;
+                        current_conflict.line_start = index + 1;
                     }
-                    current_conflict.line_end=i+1;
-                } else {       // not conflicting
-                    conflicting=false;
-                    if current_conflict.line_start!=0 {
+                    current_conflict.line_end = index + 1;
+                } else {
+                    // not conflicting
+                    conflicting = false;
+                    if current_conflict.line_start != 0 {
                         // add conflict block to conflicts
                         conflicts.push(current_conflict.clone());
-                        current_conflict= Conflict {
+                        current_conflict = Conflict {
                             file: o.name.clone(),
                             line_start: 0,
                             line_end: 0,
@@ -298,16 +322,17 @@ fn handle_conflict(
         }
         TreeLineKind::Tree => {
             panic!("Shouldn't go here.")
+        }
     }
 }
 // /// 注入 Git 样式冲突标记，返回合并内容和冲突行区间
 // fn inject_conflict_markers(ours: &Blob, theirs: &Blob) -> (String, usize, usize) {
 //     let ours_lines: Vec<&str> = ours.content.lines().collect();
 //     let theirs_lines: Vec<&str> = theirs.content.lines().collect();
-// 
+//
 //     let start = 1;
 //     let end = std::cmp::max(ours_lines.len(), theirs_lines.len());
-// 
+//
 //     let merged = format!(
 //         "<<<<<<< ours\n{}\n=======\n{}\n>>>>>>> theirs\n",
 //         ours.content.trim_end(),
