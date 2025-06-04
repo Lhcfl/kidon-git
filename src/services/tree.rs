@@ -309,7 +309,7 @@ fn handle_conflict(
                     }
                 }
             }
-            if conflicting &&  current_conflict.line_start != 0 {
+            if conflicting && current_conflict.line_start != 0 {
                 conflicts.push(current_conflict.clone());
             }
             Ok(())

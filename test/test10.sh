@@ -39,8 +39,6 @@ hash2=$(./rust-git commit -m "b" 2>&1)
 content1=$(./rust-git merge a 2>&1)
 # 合并 b 分⽀
 content2=$(./rust-git merge b 2>&1)
-补充测试⽤例集.md 2025-05-27
-7 / 8
 # 验证 main 分⽀是否包含 m.txt、a.txt 和 b.txt 文件
 if [ -f "m.txt" ] && [ -f "a.txt" ] && [ -f "b.txt" ]; then
  # 读取文件内容并加入换⾏符

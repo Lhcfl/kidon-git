@@ -51,7 +51,7 @@ impl MergeService for Repository {
                     );
                 } else {
                     oj_output!(
-                        "Merge conflict in {}: [{} , {}]",
+                        "Merge conflict in {}: [{}, {}]",
                         conflict.file, conflict.line_start, conflict.line_end
                     );
                 }
