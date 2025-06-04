@@ -6,16 +6,26 @@ use crate::{
 use std::io;
 use crate::models::commit::Commit;
 
+impl WithRepo<'_, Branch> {
+    pub fn get_current_commit(&self) -> io::Result<WithRepo<Commit>> {
+        let sha1 = &self.head;
+        let obj = self.wrap(Object::accessor(sha1)).load()?;
+        Ok(obj.map(|o| o.cast_commit()))
+    }
+}
+
 pub enum BranchCreationError {
     AlreadyExists,
     InvalidName,
     IoError(io::Error),
 }
+
 impl From<io::Error> for BranchCreationError {
     fn from(err: io::Error) -> Self {
         BranchCreationError::IoError(err)
     }
 }
+
 impl From<BranchCreationError> for anyhow::Error {
     fn from(err: BranchCreationError) -> Self {
         match err {
@@ -25,6 +35,7 @@ impl From<BranchCreationError> for anyhow::Error {
         }
     }
 }
+
 pub trait BranchService {
     fn list_branch(&self) -> io::Result<Vec<String>>;
     fn create_branch(&self, branch_name: &str)

@@ -15,7 +15,7 @@ impl Exec for Merge {
             anyhow::bail!("branch {} not found", self.branch);
         };
 
-        repo.merge(&branch)?;
+        repo.merge(branch.unwrap())?;
         Ok(())
     }
 }

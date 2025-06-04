@@ -53,7 +53,7 @@ pub struct WithRepo<'r, T> {
 }
 
 impl<'r, T> WithRepo<'r, T> {
-    pub fn new(repo: &Result<Repository, RepositoryInitError>, inner: T) -> Self {
+    pub fn new(repo: &'r Repository, inner: T) -> Self {
         WithRepo { repo, inner }
     }
 
