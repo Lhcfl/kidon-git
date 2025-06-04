@@ -56,7 +56,7 @@ impl MergeService for Repository {
                     );
                 }
             }
-            anyhow::bail!("Merge conflicts detected");
+            return Ok(());
         }
 
         // ✅ 无冲突，生成合并提交
