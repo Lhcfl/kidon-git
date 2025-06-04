@@ -203,7 +203,7 @@ pub fn auto_merge_trees(
                     let o_tree = ours.wrap(Object::accessor(&o.sha1)).load()?.unwrap().cast_tree();
                     let t_tree = theirs.wrap(Object::accessor(&t.sha1)).load()?.unwrap().cast_tree();
                     let (merged_subtree, sub_conflicts) =
-                        auto_merge_trees(&base.wrap(Object::Tree(b_tree)), &ours.wrap(Object::Tree(o_tree)), &theirs.wrap(Object::Tree(t_tree)))?;
+                        auto_merge_trees(&base.wrap(Object::Tree(b_tree).cast_tree()), &ours.wrap(Object::Tree(o_tree).cast_tree()), &theirs.wrap(Object::Tree(t_tree).cast_tree()))?;
                     merged_map.insert(item.clone(), TreeLine {
                         name: item.clone(),
                         kind: TreeLineKind::Tree,
@@ -231,9 +231,8 @@ pub fn auto_merge_trees(
                         .load()?
                         .unwrap()
                         .cast_tree();
-                    // ... right?? @linca
                     let (merged_subtree, sub_conflicts) = auto_merge_trees(
-                        &base.wrap(o_tree.clone()),
+                        &base.wrap(Tree { objects: Vec::new() }),
                         &ours.wrap(o_tree),
                         &theirs.wrap(t_tree),
                     )?;
@@ -309,6 +308,9 @@ fn handle_conflict(
                         };
                     }
                 }
+            }
+            if conflicting &&  current_conflict.line_start != 0 {
+                conflicts.push(current_conflict.clone());
             }
             Ok(())
         }

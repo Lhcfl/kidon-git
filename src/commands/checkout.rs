@@ -22,13 +22,12 @@ impl Exec for Checkout {
         }
 
         // Check if the branch exists
-        if !repo.branch_exists(branch_name)? {
-            anyhow::bail!("pathspec '{branch_name}' did not match any file(s) known to git");
-
+        if repo.list_branch().unwrap().len()!=0 && !repo.branch_exists(branch_name)? {
+            anyhow::bail!("pathspec '{branch_name}' did not match any file(s) known to git"); 
         }
 
         // Switch to the branch
-        repo.checkout_branch(branch_name)?;
+        repo.checkout_branch(branch_name, self.create)?;
 
         // console_output!("Switched to branch '{}'", branch_name);
         Ok(())

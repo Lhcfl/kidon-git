@@ -42,7 +42,7 @@ pub trait BranchService {
     -> Result<WithRepo<'_, Branch>, BranchCreationError>;
     fn delete_branch(&self, branch_name: &str) -> io::Result<()>;
     fn branch_exists(&self, branch_name: &str) -> io::Result<bool>;
-    fn checkout_branch(&mut self, branch_name: &str) -> io::Result<()>;
+    fn checkout_branch(&mut self, branch_name: &str, dry: bool) -> io::Result<()>;
 }
 
 impl BranchService for Repository {
@@ -133,7 +133,15 @@ impl BranchService for Repository {
         Ok(self.list_branch()?.iter().any(|b| b == name))
     }
 
-    fn checkout_branch(&mut self, name: &str) -> io::Result<()> {
+    fn checkout_branch(&mut self, name: &str, dry: bool) -> io::Result<()> {
+        // Step 0: if is dry checkout
+        if dry && self.list_branch().unwrap().len()==0 {
+            // Step 0-8: Update HEAD to point to the new branch, no need to modify anything.
+            let head = self.head_mut();
+            head.branch_name = name.into();
+            self.save_head()?;
+            return Ok(())
+        }
         // Step 1: Check if the branch exists
         if !self.branch_exists(name)? {
             return Err(io::Error::new(
@@ -179,7 +187,8 @@ impl BranchService for Repository {
                         .wrap(Object::accessor(&change.line.sha1))
                         .load()?.clone()
                         .cast_blob();
-                    let path = self.root.join(&change.line.name);
+                    // Emmm.. assuming workign dir is .git's parent @lhcfl maybe add pwd root in repo?
+                    let path = self.root.parent().unwrap().join(&change.line.name);
 
                     // Ensure parent directories exist
                     if let Some(parent) = path.parent() {
@@ -192,7 +201,8 @@ impl BranchService for Repository {
                 }
                 ComparedKind::Deleted => {
                     // Remove deleted files
-                    let path = self.root.join(&change.line.name);
+                    let path = self.root.parent().unwrap().join(&change.line.name);
+
                     if path.is_file() || path.is_symlink() {
                         std::fs::remove_file(&path)?;
                     } else if path.is_dir() {

@@ -33,7 +33,7 @@ hash_suffix1=${hash1:2}
 hash_prefix2=${hash2:0:2}
 hash_suffix2=${hash2:2}
 # 检查 .git/objects ⽬录下是否存在对应的对象文件。如果文件不存在，则打印报错信息。
-if [ -f ".kidon-git/objects/$hash_prefix1/$hash_suffix1" ] && [ -f ".kidon-git/objects/$hash_prefix2/$hash_suffix2" ]; then
+if [ -f ".git/objects/$hash_prefix1/$hash_suffix1" ] && [ -f ".git/objects/$hash_prefix2/$hash_suffix2" ]; then
  echo "Success!"
 else
  echo "The object file does not exist!"

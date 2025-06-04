@@ -19,14 +19,14 @@ hash=$(/bin/bash -c './rust-git commit -m "Initial commit" 2>&1')
 # 切换到 feature 分⽀
 ./rust-git checkout feature
 # 验证分⽀切换是否成功。请注意，⼀定要及时更新.git/HEAD内容，否则直接报错退出。
-if ! grep -q "ref: refs/heads/feature" ".kidon-git/HEAD"; then
+if ! grep -q "ref: refs/heads/feature" ".git/HEAD"; then
  echo "Failed to switch to feature branch"
  exit 1
 fi
 # 切换到 hotfix 分⽀
 ./rust-git checkout hotfix
 # 验证分⽀切换是否成功
-if ! grep -q "ref: refs/heads/hotfix" ".kidon-git/HEAD"; then
+if ! grep -q "ref: refs/heads/hotfix" ".git/HEAD"; then
  echo "Failed to switch to hotfix branch"
  exit 1
 fi
@@ -36,6 +36,6 @@ echo "Success!"
 # 尝试切换到不存在的分⽀
 message=$(./rust-git checkout non-existent 2>&1)
 # 验证当前分⽀是否仍为 master
-if grep -q "ref: refs/heads/master" ".kidon-git/HEAD"; then
+if grep -q "ref: refs/heads/master" ".git/HEAD"; then
  echo "Success!"
 fi
