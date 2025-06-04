@@ -1,10 +1,9 @@
 use std::collections::{HashMap, VecDeque};
-use std::io;
 
 use crate::models::commit::{Commit, CommitBuilder};
 use crate::models::object::{Object, Sha1Able};
-use crate::models::tree::Tree;
 use crate::models::{Accessible, branch::Branch, repo::Repository};
+use crate::oj_output;
 use crate::services::tree::auto_merge_trees;
 
 pub trait MergeService {
@@ -44,12 +43,12 @@ impl MergeService for Repository {
         if !conflicts.is_empty() {
             for conflict in conflicts {
                 if conflict.line_start == conflict.line_end {
-                    println!(
+                    oj_output!(
                         "Merge conflict in {}: {}",
                         conflict.file, conflict.line_start
                     );
                 } else {
-                    println!(
+                    oj_output!(
                         "Merge conflict in {}: [{} , {}]",
                         conflict.file, conflict.line_start, conflict.line_end
                     );
@@ -78,7 +77,7 @@ impl MergeService for Repository {
         ours_branch_cloned.head = sha1.clone().into();
         ours_branch_cloned.save()?;
 
-        println!("Merge successful: new HEAD is {}", sha1);
+        // oj_output!("Merge successful: new HEAD is {}", sha1);
         Ok(())
     }
 
