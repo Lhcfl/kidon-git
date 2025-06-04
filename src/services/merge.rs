@@ -5,6 +5,8 @@ use crate::models::commit::{Commit, CommitBuilder};
 use crate::models::object::{Object, Sha1Able};
 use crate::models::tree::Tree;
 use crate::models::{Accessible, branch::Branch, repo::Repository};
+use crate::services::dump_tree::DumpTreeService;
+use crate::services::{dump_tree, merge};
 use crate::services::tree::auto_merge_trees;
 
 pub trait MergeService {
@@ -61,6 +63,7 @@ impl MergeService for Repository {
         // ✅ 无冲突，生成合并提交
         let merged_tree_obj = self.wrap(Object::Tree(merged_tree));
         merged_tree_obj.save()?;
+
         let tree_sha1 = merged_tree_obj.sha1();
 
         let message = format!("Merge branch '{}'", theirs_branch.name);
@@ -73,6 +76,9 @@ impl MergeService for Repository {
 
         let sha1 = merge_commit.sha1();
         self.wrap(Object::Commit(merge_commit)).save()?;
+
+        let merged_tree = merged_tree_obj.unwrap().cast_tree();
+        self.dump_tree(merged_tree)?;
 
         let mut ours_branch_cloned = ours_branch.cloned();
         ours_branch_cloned.head = sha1.clone().into();
