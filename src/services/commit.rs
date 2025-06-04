@@ -1,14 +1,21 @@
+use std::io;
+
 use crate::{
     models::{
-        commit::{Commit, CommitBuilder},
-        object::{Object, Sha1Able},
-        repo::Repository,
+        commit::{Commit, CommitBuilder}, object::{Object, Sha1Able}, repo::{Repository, WithRepo}, tree::Tree, Accessible
     },
     services::tree::compare_trees,
-    models::Accessible,
 };
 
 use super::tree::ComparedLine;
+
+impl WithRepo<'_, Commit> {
+    pub fn get_tree(&self) -> io::Result<WithRepo<Tree>> {
+        let sha1 = &self.tree;
+        let obj = self.wrap(Object::accessor(sha1)).load()?;
+        Ok(obj.map(|o| o.cast_tree()))
+    }
+}
 
 pub struct CommitCreationInfo {
     pub compared: Option<Vec<ComparedLine>>,

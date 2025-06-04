@@ -160,25 +160,17 @@ impl BranchService for Repository {
         // Step 2: Load the branch
         let target_branch = self.wrap(Branch::accessor(&name)).load()?;
 
-        // Step 3: Check if the branch has any commits
-        let target_commit_sha1 = &target_branch.head;
-
         // Step 4: Load the target branch's tree
-        let target_commit = self.wrap(Object::accessor(target_commit_sha1)).load()?.map(|t| t.cast_commit());
-        let target_tree = self.wrap(Object::accessor(&target_commit.tree)).load()?.map(|t| t.cast_tree());
-        let target_tree=self.wrap(target_tree);
-
+        let target_commit = target_branch.get_current_commit()?;
+        let target_tree = target_commit.get_tree()?;
         // Step 5: Load the current branch's tree
-        let current_commit_sha1 = &current_branch.head;
-        let current_commit = self.wrap(Object::accessor(current_commit_sha1)).load()?.map(|t| t.cast_commit());
-        let current_tree = self.wrap(Object::accessor(&current_commit.tree)).load()?.map(|t| t.cast_tree());
-        let current_tree=self.wrap(current_tree);
+        let current_commit = current_branch.get_current_commit()?;
+        let current_tree = current_commit.get_tree()?;
 
         // Step 6: Compare the trees
         let changes = compare_trees(&current_tree, &target_tree)?;
 
         // Step 7: Apply changes to the working directory
-        let mut stage = self.stage()?.into_muter();
         for change in changes {
             match change.kind {
                 ComparedKind::Added | ComparedKind::Modified => {
@@ -188,7 +180,7 @@ impl BranchService for Repository {
                         .load()?.clone()
                         .cast_blob();
                     // Emmm.. assuming workign dir is .git's parent @lhcfl maybe add pwd root in repo?
-                    let path = self.root.parent().unwrap().join(&change.line.name);
+                    let path = self.working_dir().join(&change.line.name);
 
                     // Ensure parent directories exist
                     if let Some(parent) = path.parent() {
@@ -197,23 +189,22 @@ impl BranchService for Repository {
 
                     // Write the file
                     std::fs::write(&path, blob.as_bytes())?;
-                    stage.add_path(&path)?;
                 }
                 ComparedKind::Deleted => {
                     // Remove deleted files
-                    let path = self.root.parent().unwrap().join(&change.line.name);
+                    let path = self.working_dir().join(&change.line.name);
 
                     if path.is_file() || path.is_symlink() {
                         std::fs::remove_file(&path)?;
                     } else if path.is_dir() {
                         std::fs::remove_dir_all(&path)?;
                     }
-
-                    stage.remove_path(&path)?;
                 }
             }
         }
-        stage.freeze().map(Stage).save()?;
+        
+        // save the target tree to the stage
+        target_tree.map(Stage).save()?;
 
         // Step 8: Update HEAD to point to the new branch
         let head = self.head_mut();

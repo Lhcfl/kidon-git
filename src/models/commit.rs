@@ -63,22 +63,6 @@ impl Commit {
             message: by.message,
         }
     }
-    pub fn get_parent_commit(&self) -> anyhow::Result<Commit> {
-        // This function should find the parent commit of the current commit.
-        // The parent commit is the most recent commit before the current one.
-        let repo = Repository::load()?;
-        let Some(parent_sha1) = &self.parent else{
-            anyhow::bail!("this commit has no parent, it is the first commit");
-        };
-        let obj = repo.wrap(Object::accessor(parent_sha1)).load()?.unwrap();
-        let Object::Commit(parent_commit) = obj else {
-            anyhow::bail!(
-                    "bad object type: object {parent_sha1} is not a commit, but a {}",
-                    obj.object_type()
-                );
-        };
-        Ok(parent_commit)
-    }
 }
 
 impl Display for Commit {
