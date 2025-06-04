@@ -4,7 +4,6 @@ use crate::models::commit::{Commit, CommitBuilder};
 use crate::models::object::{Object, Sha1Able};
 use crate::models::{Accessible, branch::Branch, repo::Repository};
 use crate::services::dump_tree::DumpTreeService;
-use crate::services::{dump_tree, merge};
 use crate::oj_output;
 use crate::services::tree::auto_merge_trees;
 
