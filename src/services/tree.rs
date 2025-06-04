@@ -189,8 +189,8 @@ pub fn auto_merge_trees(
             }
 
             (Some(b), Some(o), Some(t)) if o.sha1 != t.sha1 => {
-                // Conflict: o!=t 
-                if o.kind!= t.kind {
+                // Conflict: o!=t
+                if o.kind != t.kind {
                     anyhow::bail!(
                         "Conflict: different kinds of objects, o: {}, t: {}",
                         o.kind,
@@ -199,25 +199,47 @@ pub fn auto_merge_trees(
                 }
                 if o.kind == TreeLineKind::Tree {
                     // 处理子目录冲突
-                    let b_tree = base.wrap(Object::accessor(&b.sha1)).load()?.unwrap().cast_tree();
-                    let o_tree = ours.wrap(Object::accessor(&o.sha1)).load()?.unwrap().cast_tree();
-                    let t_tree = theirs.wrap(Object::accessor(&t.sha1)).load()?.unwrap().cast_tree();
-                    let (merged_subtree, sub_conflicts) =
-                        auto_merge_trees(&base.wrap(Object::Tree(b_tree).cast_tree()), &ours.wrap(Object::Tree(o_tree).cast_tree()), &theirs.wrap(Object::Tree(t_tree).cast_tree()))?;
-                    merged_map.insert(item.clone(), TreeLine {
-                        name: item.clone(),
-                        kind: TreeLineKind::Tree,
-                        sha1: merged_subtree.sha1().into(),
-                    });
+                    let b_tree = base
+                        .wrap(Object::accessor(&b.sha1))
+                        .load()?
+                        .unwrap()
+                        .cast_tree();
+                    let o_tree = ours
+                        .wrap(Object::accessor(&o.sha1))
+                        .load()?
+                        .unwrap()
+                        .cast_tree();
+                    let t_tree = theirs
+                        .wrap(Object::accessor(&t.sha1))
+                        .load()?
+                        .unwrap()
+                        .cast_tree();
+                    let (merged_subtree, sub_conflicts) = auto_merge_trees(
+                        &base.wrap(Object::Tree(b_tree).cast_tree()),
+                        &ours.wrap(Object::Tree(o_tree).cast_tree()),
+                        &theirs.wrap(Object::Tree(t_tree).cast_tree()),
+                    )?;
+                    merged_map.insert(
+                        item.clone(),
+                        TreeLine {
+                            name: item.clone(),
+                            kind: TreeLineKind::Tree,
+                            sha1: merged_subtree.sha1().into(),
+                        },
+                    );
                     conflicts.extend(sub_conflicts);
                     continue;
                 }
                 handle_conflict(&mut conflicts, o, t, &ours, &theirs)?;
             }
             (None, Some(o), Some(t)) if o.sha1 != t.sha1 => {
-                // Conflict: o!=t 
-                if o.kind!= t.kind {
-                    anyhow::bail!("Conflict: different kinds of objects, o: {}, t: {}", o.kind, t.kind);
+                // Conflict: o!=t
+                if o.kind != t.kind {
+                    anyhow::bail!(
+                        "Conflict: different kinds of objects, o: {}, t: {}",
+                        o.kind,
+                        t.kind
+                    );
                 }
                 if o.kind == TreeLineKind::Tree {
                     // 处理子目录冲突
@@ -232,7 +254,9 @@ pub fn auto_merge_trees(
                         .unwrap()
                         .cast_tree();
                     let (merged_subtree, sub_conflicts) = auto_merge_trees(
-                        &base.wrap(Tree { objects: Vec::new() }),
+                        &base.wrap(Tree {
+                            objects: Vec::new(),
+                        }),
                         &ours.wrap(o_tree),
                         &theirs.wrap(t_tree),
                     )?;
@@ -280,11 +304,8 @@ fn handle_conflict(
             let b_str = b.as_string();
             let b_lines = b_str.lines();
             let mut conflicting = false;
-            let mut current_conflict = Conflict {
-                file: o.name.clone(),
-                line_start: 0,
-                line_end: 0,
-            };
+            let mut line_start = 0;
+            let mut line_end = 0;
 
             for (index, (a_line, b_line)) in a_lines.zip(b_lines).enumerate() {
                 if a_line != b_line {
@@ -292,25 +313,31 @@ fn handle_conflict(
                     if !conflicting {
                         // starting conflict block
                         conflicting = true;
-                        current_conflict.line_start = index + 1;
+                        line_start = index + 1;
                     }
-                    current_conflict.line_end = index + 1;
+                    line_end = index + 1;
                 } else {
                     // not conflicting
-                    conflicting = false;
-                    if current_conflict.line_start != 0 {
+                    if conflicting {
+                        conflicting = false;
                         // add conflict block to conflicts
-                        conflicts.push(current_conflict.clone());
-                        current_conflict = Conflict {
+                        conflicts.push(Conflict {
                             file: o.name.clone(),
-                            line_start: 0,
-                            line_end: 0,
-                        };
+                            line_end,
+                            line_start,
+                        });
                     }
+                    line_start = 0;
+                    line_end = 0;
                 }
             }
-            if conflicting &&  current_conflict.line_start != 0 {
-                conflicts.push(current_conflict.clone());
+
+            if conflicting {
+                conflicts.push(Conflict {
+                    file: o.name.clone(),
+                    line_start,
+                    line_end,
+                });
             }
             Ok(())
         }
