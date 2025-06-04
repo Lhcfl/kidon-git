@@ -2,6 +2,7 @@ use std::collections::{HashMap, VecDeque};
 
 use crate::models::commit::{Commit, CommitBuilder};
 use crate::models::object::{Object, Sha1Able};
+use crate::models::stage::{self, Stage};
 use crate::models::{Accessible, branch::Branch, repo::Repository};
 use crate::services::dump_tree::DumpTreeService;
 use crate::services::{dump_tree, merge};
@@ -77,7 +78,9 @@ impl MergeService for Repository {
         self.wrap(Object::Commit(merge_commit)).save()?;
 
         let merged_tree = merged_tree_obj.unwrap().cast_tree();
-        self.dump_tree(merged_tree)?;
+        let tree = self.wrap(Stage(merged_tree));
+        tree.save()?;        
+        self.dump_tree(tree.unwrap().0)?;
 
         let mut ours_branch_cloned = ours_branch.cloned();
         ours_branch_cloned.head = sha1.clone().into();
