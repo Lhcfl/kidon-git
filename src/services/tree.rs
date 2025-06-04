@@ -188,7 +188,29 @@ pub fn auto_merge_trees(
                 panic!("Not required.")
             }
 
-            (_, Some(o), Some(t)) if o.sha1 != t.sha1 => {
+            (Some(b), Some(o), Some(t)) if o.sha1 != t.sha1 => {
+                // Conflict: o!=t 
+                if o.kind!= t.kind {
+                    anyhow::bail!("Conflict: different kinds of objects, o: {}, t: {}", o.kind, t.kind);
+                }
+                if o.kind == TreeLineKind::Tree {
+                    // 处理子目录冲突
+                    let b_tree = base.wrap(Object::accessor(&b.sha1)).load()?.unwrap().cast_tree();
+                    let o_tree = ours.wrap(Object::accessor(&o.sha1)).load()?.unwrap().cast_tree();
+                    let t_tree = theirs.wrap(Object::accessor(&t.sha1)).load()?.unwrap().cast_tree();
+                    let (merged_subtree, sub_conflicts) =
+                        auto_merge_trees(&base.wrap(Object::Tree(b_tree)), &ours.wrap(Object::Tree(o_tree)), &theirs.wrap(Object::Tree(t_tree)))?;
+                    merged_map.insert(item.clone(), TreeLine {
+                        name: item.clone(),
+                        kind: TreeLineKind::Tree,
+                        sha1: merged_subtree.sha1().into(),
+                    });
+                    conflicts.extend(sub_conflicts);
+                    continue;
+                }
+                handle_conflict(&mut conflicts, o, t, &ours, &theirs)?;
+            }
+            (None, Some(o), Some(t)) if o.sha1 != t.sha1 => {
                 // Conflict: o!=t 
                 if o.kind!= t.kind {
                     anyhow::bail!("Conflict: different kinds of objects, o: {}, t: {}", o.kind, t.kind);
@@ -209,30 +231,6 @@ pub fn auto_merge_trees(
                     continue;
                 }
                 handle_conflict(&mut conflicts, o, t, &ours, &theirs)?;
-                // let o_blob = ours.wrap(Object::accessor(&o.sha1)).load()?.unwrap().cast_blob();
-                // let t_blob = theirs.wrap(Object::accessor(&t.sha1)).load()?.unwrap().cast_blob();
-                //
-                // let (merged, start, end) = inject_conflict_markers(&o_blob, &t_blob);
-                //
-                // let merged_blob = Blob::from_string(&merged);
-                // let blob_obj = Object::Blob(merged_blob.clone());
-                // blob_obj.save()?;
-                // let sha1 = blob_obj.sha1();
-                //
-                // merged_map.insert(
-                //     item.clone(),
-                //     TreeLine {
-                //         name: item.clone(),
-                //         kind: TreeLineKind::File,
-                //         sha1: sha1.into(),
-                //     },
-                // );
-                //
-                // conflicts.push(Conflict {
-                //     file: item.clone(),
-                //     line_start: start,
-                //     line_end: end,
-                // });
             }
             _ => {}
         }
