@@ -84,14 +84,10 @@ impl MergeService for Repository {
 
     fn get_merge_base(&self, commit1: &Commit, commit2: &Commit) -> anyhow::Result<Commit> {
         let mut visited = HashMap::new(); // 1 表示从 commit1 来，2 表示从 commit2 来，3 表示都到过
-        let mut queue = VecDeque::new();
+        let mut queue: VecDeque<(u8, crate::models::object::ObjectSha1)> = VecDeque::new();
 
-        if let Some(sha1) = &commit1.parent {
-            queue.push_back((1u8, sha1.clone()));
-        }
-        if let Some(sha2) = &commit2.parent {
-            queue.push_back((2u8, sha2.clone()));
-        }
+        queue.push_back((1u8, commit1.sha1().into()));
+        queue.push_back((2u8, commit2.sha1().into()));
 
         while let Some((source, sha)) = queue.pop_front() {
             // 如果访问过就合并标记

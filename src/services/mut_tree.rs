@@ -171,6 +171,7 @@ impl<'a> WithRepo<'a, MutableTree> {
 
         Ok(self)
     }
+
     pub fn remove_path(&mut self, path: &Path) -> io::Result<&mut Self> {
         if path.is_file() {
             self.remove_file(path)
