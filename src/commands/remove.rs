@@ -1,5 +1,5 @@
 //! Remove files from stage area
-use std::env;
+use std::{env, fs};
 
 use clap::Args;
 
@@ -32,6 +32,7 @@ impl Exec for Remove {
         for path in &self.path {
             let path = env::current_dir()?.join(path);
             stage.remove_path(&path)?;
+            fs::remove_file(path)?;
         }
         stage.freeze().map(Stage).save()?;
         Ok(())
