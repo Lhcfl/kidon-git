@@ -5,7 +5,6 @@ use crate::models::object::{Object, Sha1Able};
 use crate::models::stage::{self, Stage};
 use crate::models::{Accessible, branch::Branch, repo::Repository};
 use crate::services::dump_tree::DumpTreeService;
-use crate::services::{dump_tree, merge};
 use crate::oj_output;
 use crate::services::tree::auto_merge_trees;
 
@@ -52,12 +51,12 @@ impl MergeService for Repository {
                     );
                 } else {
                     oj_output!(
-                        "Merge conflict in {}: [{} , {}]",
+                        "Merge conflict in {}: [{}, {}]",
                         conflict.file, conflict.line_start, conflict.line_end
                     );
                 }
             }
-            anyhow::bail!("Merge conflicts detected");
+            return Ok(());
         }
 
         // ✅ 无冲突，生成合并提交

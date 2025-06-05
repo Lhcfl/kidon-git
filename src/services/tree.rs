@@ -10,7 +10,6 @@ use crate::{
     },
 };
 use std::collections::HashMap;
-use std::io::ErrorKind::ConnectionAborted;
 use std::{collections::HashSet, fmt::Display, io, path::Path};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -2,14 +2,12 @@
 
 use std::fmt::Display;
 
-use super::object::{Object, ObjectSha1, Sha1Able};
+use super::object::{ObjectSha1, Sha1Able};
 
 use bincode::{Decode, Encode};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sha1::Digest;
-use crate::models::Accessible;
-use crate::models::repo::Repository;
 
 /// A git commit, contains commit information, and some "pointers"
 /// ([ObjectSha1]) to its file [Tree](super::tree::Tree), and its parent commit
