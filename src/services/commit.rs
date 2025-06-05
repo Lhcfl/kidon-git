@@ -1,12 +1,9 @@
-use std::io;
 
 use crate::{
     models::{
-        Accessible,
         commit::{Commit, CommitBuilder},
         object::{Object, Sha1Able},
-        repo::{Repository, WithRepo},
-        tree::Tree,
+        repo::Repository,
     },
     services::{object::ObjectService, tree::compare_trees},
 };

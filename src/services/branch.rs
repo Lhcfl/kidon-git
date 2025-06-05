@@ -1,15 +1,10 @@
-use crate::models::commit::Commit;
 use crate::services::dump_tree::DumpTreeService;
-use crate::{
-    models::{
+use crate::models::{
         Accessible, DirContainer,
         branch::{Branch, EMPTY_BRANCH_HEAD_PLACEHOLDER},
-        object::Object,
         repo::{Repository, WithRepo},
         stage::Stage,
-    },
-    services::tree::{ComparedKind, compare_trees},
-};
+    };
 use std::io;
 
 pub enum BranchCreationError {

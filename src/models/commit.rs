@@ -5,7 +5,7 @@ use std::{fmt::Display, io};
 use crate::models::{
     Accessible,
     object::Object,
-    repo::{Repository, WithRepo},
+    repo::WithRepo,
     tree::Tree,
 };
 

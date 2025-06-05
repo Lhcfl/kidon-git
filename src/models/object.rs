@@ -80,6 +80,7 @@ pub enum Object {
 }
 
 impl Object {
+    #[allow(dead_code)]
     pub fn object_type(&self) -> &'static str {
         match self {
             Object::Blob(_) => "blob",

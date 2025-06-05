@@ -1,7 +1,7 @@
 use super::Exec;
 use crate::{
     console_output,
-    models::{Accessible, object::Object, repo::Repository},
+    models::repo::Repository,
     services::object::ObjectService,
 };
 use clap::Args;
