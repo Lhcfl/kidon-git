@@ -78,10 +78,11 @@ impl MergeService for Repository {
         let sha1 = merge_commit.sha1();
         self.wrap(Object::Commit(merge_commit)).save()?;
 
-        let merged_tree = merged_tree_obj.unwrap().cast_tree();
-        let tree = self.wrap(Stage(merged_tree));
-        tree.save()?;
-        self.dump_tree(tree.unwrap().0)?;
+        let merged_tree = merged_tree_obj.map(|t| t.cast_tree());
+
+        self.dump_tree(&merged_tree)?;
+        
+        merged_tree.map(Stage).save()?;
 
         let mut ours_branch_cloned = ours_branch.cloned();
         ours_branch_cloned.head = sha1.clone().into();
