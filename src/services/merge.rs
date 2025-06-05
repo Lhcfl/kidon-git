@@ -81,7 +81,7 @@ impl MergeService for Repository {
         let merged_tree = merged_tree_obj.map(|t| t.cast_tree());
 
         self.dump_tree(&merged_tree)?;
-        
+
         merged_tree.map(Stage).save()?;
 
         let mut ours_branch_cloned = ours_branch.cloned();

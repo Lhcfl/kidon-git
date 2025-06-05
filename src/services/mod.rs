@@ -11,6 +11,7 @@ pub mod commit;
 pub mod dump_tree;
 pub mod merge;
 pub mod mut_tree;
+pub mod object;
 pub mod oj;
 pub mod repo;
 pub mod stage;

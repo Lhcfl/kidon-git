@@ -12,14 +12,6 @@ use crate::{
 };
 use std::io;
 
-impl WithRepo<'_, Branch> {
-    pub fn get_current_commit(&self) -> io::Result<WithRepo<Commit>> {
-        let sha1 = &self.head;
-        let obj = self.wrap(Object::accessor(sha1)).load()?;
-        Ok(obj.map(|o| o.cast_commit()))
-    }
-}
-
 pub enum BranchCreationError {
     AlreadyExists,
     InvalidName,
@@ -43,6 +35,7 @@ impl From<BranchCreationError> for anyhow::Error {
 }
 
 pub trait BranchService {
+    fn load_branch<'a>(&'a self, name: &str) -> io::Result<WithRepo<'a, Branch>>;
     fn list_branch(&self) -> io::Result<Vec<String>>;
     fn create_branch(&self, branch_name: &str)
     -> Result<WithRepo<'_, Branch>, BranchCreationError>;
@@ -52,6 +45,11 @@ pub trait BranchService {
 }
 
 impl BranchService for Repository {
+    /// load a branch by its name
+    fn load_branch<'a>(&'a self, name: &str) -> io::Result<WithRepo<'a, Branch>> {
+        self.wrap(Branch::accessor(&name)).load()
+    }
+
     /// list branch names, including remote branches, by a vector of strings
     fn list_branch(&self) -> io::Result<Vec<String>> {
         let mut branches = Vec::new();
@@ -156,21 +154,19 @@ impl BranchService for Repository {
             ));
         }
 
-        let Ok(current_branch) = self.head().load_branch() else {
+        // if dry checkout, just update the HEAD
+        let Ok(_) = self.head().load_branch() else {
             let head = self.head_mut();
             head.branch_name = name.to_string();
             self.save_head()?;
             return Ok(());
         };
 
-        // Step 2: Load the branch
-        let target_branch = self.wrap(Branch::accessor(&name)).load()?;
-
-        // Step 4: Load the target branch's tree
+        let target_branch = self.load_branch(name)?;
         let target_commit = target_branch.get_current_commit()?;
         let target_tree = target_commit.get_tree()?;
 
-        self.dump_tree(&target_tree);
+        self.dump_tree(&target_tree)?;
 
         // save the target tree to the stage
         target_tree.map(Stage).save()?;

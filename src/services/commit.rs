@@ -8,18 +8,10 @@ use crate::{
         repo::{Repository, WithRepo},
         tree::Tree,
     },
-    services::tree::compare_trees,
+    services::{object::ObjectService, tree::compare_trees},
 };
 
 use super::tree::ComparedLine;
-
-impl WithRepo<'_, Commit> {
-    pub fn get_tree(&self) -> io::Result<WithRepo<Tree>> {
-        let sha1 = &self.tree;
-        let obj = self.wrap(Object::accessor(sha1)).load()?;
-        Ok(obj.map(|o| o.cast_tree()))
-    }
-}
 
 pub struct CommitCreationInfo {
     pub compared: Option<Vec<ComparedLine>>,
@@ -48,13 +40,8 @@ impl CommitService for Repository {
 
         // Step 3: Compare the tree with the current HEAD, to check if working tree clean
         let compared = if !is_new {
-            let current_sha1 = &branch.head;
-            let current_commit = self.wrap(Object::accessor(current_sha1)).load()?;
-            let current_tree_sha1 = current_commit.unwrap().cast_commit().tree;
-            let current_tree = self
-                .wrap(Object::accessor(&current_tree_sha1))
-                .load()?
-                .map(|t| t.cast_tree());
+            let current_commit = self.load_object(&branch.head)?.map(|o| o.cast_commit());
+            let current_tree = current_commit.get_tree()?;
 
             let compared = compare_trees(&current_tree, &tree)?;
             if compared.is_empty() {

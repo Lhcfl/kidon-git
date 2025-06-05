@@ -1,6 +1,13 @@
 //! Commit object
 
-use std::fmt::Display;
+use std::{fmt::Display, io};
+
+use crate::models::{
+    Accessible,
+    object::Object,
+    repo::{Repository, WithRepo},
+    tree::Tree,
+};
 
 use super::object::{ObjectSha1, Sha1Able};
 
@@ -90,6 +97,14 @@ impl Sha1Able for Commit {
         hasher.update(self.timestamp.1.to_le_bytes());
         hasher.update(self.message.as_bytes());
         base16ct::lower::encode_string(&hasher.finalize())
+    }
+}
+
+impl WithRepo<'_, Commit> {
+    pub fn get_tree(&self) -> io::Result<WithRepo<Tree>> {
+        let sha1 = &self.tree;
+        let obj = self.wrap(Object::accessor(sha1)).load()?;
+        Ok(obj.map(|o| o.cast_tree()))
     }
 }
 

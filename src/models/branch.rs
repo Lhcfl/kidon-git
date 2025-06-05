@@ -1,8 +1,10 @@
 //! Branch of the repository
 
+use std::io;
+
 use super::object::ObjectSha1;
 use crate::{
-    models::{Accessible, DirContainer, Store},
+    models::{Accessible, DirContainer, Store, commit::Commit, object::Object, repo::WithRepo},
     serde_json_store,
 };
 use regex::Regex;
@@ -111,5 +113,13 @@ impl DirContainer for Branch {
         std::fs::create_dir_all(path.join("heads"))?;
         std::fs::create_dir_all(path.join("remotes"))?;
         Ok(())
+    }
+}
+
+impl WithRepo<'_, Branch> {
+    pub fn get_current_commit(&self) -> io::Result<WithRepo<Commit>> {
+        let sha1 = &self.head;
+        let obj = self.wrap(Object::accessor(sha1)).load()?;
+        Ok(obj.map(|o| o.cast_commit()))
     }
 }

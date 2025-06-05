@@ -1,6 +1,11 @@
 use crate::{
-    models::{object::Object, repo::{Repository, WithRepo}, tree::Tree, Accessible},
-    services::tree::{compare_trees, ComparedKind},
+    models::{
+        Accessible,
+        object::Object,
+        repo::{Repository, WithRepo},
+        tree::Tree,
+    },
+    services::tree::{ComparedKind, compare_trees},
 };
 use std::io;
 

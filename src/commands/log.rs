@@ -2,6 +2,7 @@ use super::Exec;
 use crate::{
     console_output,
     models::{Accessible, object::Object, repo::Repository},
+    services::object::ObjectService,
 };
 use clap::Args;
 use colored::Colorize;
@@ -30,13 +31,7 @@ impl Exec for Log {
                 return Ok(());
             };
 
-            let obj = repo.wrap(Object::accessor(&sha1)).load()?.unwrap();
-            let Object::Commit(commit) = obj else {
-                anyhow::bail!(
-                    "bad object type: object {sha1} is not a commit, but a {}",
-                    obj.object_type()
-                );
-            };
+            let commit = repo.load_object(&sha1)?.unwrap().cast_commit();
 
             console_output!("{} {}", "commit".yellow(), sha1);
             console_output!(
