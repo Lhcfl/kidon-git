@@ -135,7 +135,7 @@ impl BranchService for Repository {
 
     fn checkout_branch(&mut self, name: &str, dry: bool) -> io::Result<()> {
         // Step 0: if is dry checkout
-        if dry && self.list_branch().unwrap().len()==0 {
+        if dry && self.list_branch().unwrap().is_empty() {
             // Step 0-8: Update HEAD to point to the new branch, no need to modify anything.
             let head = self.head_mut();
             head.branch_name = name.into();

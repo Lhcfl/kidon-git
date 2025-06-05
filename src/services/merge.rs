@@ -2,7 +2,7 @@ use std::collections::{HashMap, VecDeque};
 
 use crate::models::commit::{Commit, CommitBuilder};
 use crate::models::object::{Object, Sha1Able};
-use crate::models::stage::{self, Stage};
+use crate::models::stage::Stage;
 use crate::models::{Accessible, branch::Branch, repo::Repository};
 use crate::services::dump_tree::DumpTreeService;
 use crate::oj_output;
@@ -18,7 +18,6 @@ impl MergeService for Repository {
     ///
     /// This method will merge the specified branch into the current branch.
     /// It will handle conflicts and return an error if the merge fails.
-
     fn merge(&self, theirs_branch: Branch) -> anyhow::Result<()> {
         let theirs_branch = self.wrap(theirs_branch);
         let ours_branch = self.head().load_branch()?;

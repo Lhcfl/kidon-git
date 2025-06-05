@@ -119,20 +119,11 @@ pub fn compare_trees(from: &WithRepo<Tree>, to: &WithRepo<Tree>) -> io::Result<V
     compare_tree_with_path(Path::new(""), from, to)
 }
 
+#[derive(Debug, Clone)]
 pub struct Conflict {
     pub file: String,
     pub line_start: usize,
     pub line_end: usize,
-}
-
-impl Conflict {
-    pub(crate) fn clone(&self) -> Conflict {
-        Conflict {
-            file: self.file.clone(),
-            line_start: self.line_start,
-            line_end: self.line_end,
-        }
-    }
 }
 
 /// 自动合并 tree，如果冲突，则返回注入了冲突标记的 tree 和冲突信息
@@ -229,7 +220,7 @@ pub fn auto_merge_trees(
                     conflicts.extend(sub_conflicts);
                     continue;
                 }
-                handle_conflict(&mut conflicts, o, t, &ours, &theirs)?;
+                handle_conflict(&mut conflicts, o, t, ours, theirs)?;
             }
             (None, Some(o), Some(t)) if o.sha1 != t.sha1 => {
                 // Conflict: o!=t
@@ -270,7 +261,7 @@ pub fn auto_merge_trees(
                     conflicts.extend(sub_conflicts);
                     continue;
                 }
-                handle_conflict(&mut conflicts, o, t, &ours, &theirs)?;
+                handle_conflict(&mut conflicts, o, t, ours, theirs)?;
             }
             _ => {}
         }

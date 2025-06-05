@@ -1,7 +1,5 @@
 use super::Exec;
-use crate::{
-    console_output, models::{object::Object, repo::Repository, Accessible}
-};
+use crate::models::{object::Object, repo::Repository, Accessible};
 use clap::Args;
 
 #[derive(Debug, Args)]
