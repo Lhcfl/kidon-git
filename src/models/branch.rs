@@ -1,9 +1,9 @@
 //! Branch of the repository
 
-use super::object::{ObjectSha1};
+use super::object::ObjectSha1;
 use crate::{
-    serde_json_store,
     models::{Accessible, DirContainer, Store},
+    serde_json_store,
 };
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -22,7 +22,7 @@ pub struct Branch {
     pub head: ObjectSha1,
 }
 
-pub const EMPTY_BRANCH_HEAD_PLACEHOLDER : &str = "empty_branch_head_placeholder";
+pub const EMPTY_BRANCH_HEAD_PLACEHOLDER: &str = "empty_branch_head_placeholder";
 
 impl Branch {
     pub fn validate_name(name: &str) -> bool {
@@ -55,20 +55,16 @@ impl Branch {
         let first = splited.next().expect("branch name is empty");
         let second = splited.next();
         match second {
-            Some(name) => {
-                Branch {
-                    name: name.to_string(),
-                    remote: Some(first.to_string()),
-                    head: ObjectSha1::from(EMPTY_BRANCH_HEAD_PLACEHOLDER),
-                }
-            }
-            None => {
-                Branch {
-                    name: first.to_string(),
-                    remote: None,
-                    head: ObjectSha1::from(EMPTY_BRANCH_HEAD_PLACEHOLDER),
-                }
-            }
+            Some(name) => Branch {
+                name: name.to_string(),
+                remote: Some(first.to_string()),
+                head: ObjectSha1::from(EMPTY_BRANCH_HEAD_PLACEHOLDER),
+            },
+            None => Branch {
+                name: first.to_string(),
+                remote: None,
+                head: ObjectSha1::from(EMPTY_BRANCH_HEAD_PLACEHOLDER),
+            },
         }
     }
 }

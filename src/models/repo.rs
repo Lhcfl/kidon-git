@@ -4,7 +4,7 @@ use super::ignores::Ignores;
 use super::stage::Stage;
 use super::{branch, head, object};
 use crate::models::{Accessible, Accessor, DirContainer};
-use crate::{models::head::Head, models::Store};
+use crate::{models::Store, models::head::Head};
 use std::fmt::Display;
 use std::ops::{Deref, DerefMut};
 use std::path::Path;

@@ -23,7 +23,7 @@ impl Exec for Checkout {
 
         // Check if the branch exists
         if !repo.list_branch().unwrap().is_empty() && !repo.branch_exists(branch_name)? {
-            anyhow::bail!("pathspec '{branch_name}' did not match any file(s) known to git"); 
+            anyhow::bail!("pathspec '{branch_name}' did not match any file(s) known to git");
         }
 
         // Switch to the branch

@@ -4,7 +4,9 @@ use clap::Args;
 use colored::Colorize;
 
 use crate::{
-    console_output, models::{object::Object, repo::Repository, tree::Tree, Accessible}, services::tree::{compare_trees, ComparedKind}
+    console_output,
+    models::{Accessible, object::Object, repo::Repository, tree::Tree},
+    services::tree::{ComparedKind, compare_trees},
 };
 
 use super::Exec;

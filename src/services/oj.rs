@@ -16,7 +16,7 @@ macro_rules! console_output {
             const SHOULD_PRINT : bool = true;
             #[cfg(not(feature = "development"))]
             const SHOULD_PRINT : bool = false;
-            
+
             if SHOULD_PRINT {
                 println!($($arg)*);
             }

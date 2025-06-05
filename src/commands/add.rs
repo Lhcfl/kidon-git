@@ -4,7 +4,9 @@ use clap::Args;
 use colored::Colorize;
 
 use crate::{
-    console_output, models::{repo::Repository, stage::Stage}, services::stage::StageService
+    console_output,
+    models::{repo::Repository, stage::Stage},
+    services::stage::StageService,
 };
 
 use super::Exec;

@@ -17,7 +17,7 @@ struct Args {
 #[cfg(feature = "development")]
 fn dev_init() {
     use simple_logger::SimpleLogger;
-    
+
     SimpleLogger::new()
         .with_colors(true)
         .without_timestamps()

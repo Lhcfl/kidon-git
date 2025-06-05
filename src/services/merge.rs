@@ -4,8 +4,8 @@ use crate::models::commit::{Commit, CommitBuilder};
 use crate::models::object::{Object, Sha1Able};
 use crate::models::stage::Stage;
 use crate::models::{Accessible, branch::Branch, repo::Repository};
-use crate::services::dump_tree::DumpTreeService;
 use crate::oj_output;
+use crate::services::dump_tree::DumpTreeService;
 use crate::services::tree::auto_merge_trees;
 
 pub trait MergeService {
@@ -46,12 +46,15 @@ impl MergeService for Repository {
                 if conflict.line_start == conflict.line_end {
                     oj_output!(
                         "Merge conflict in {}: {}",
-                        conflict.file, conflict.line_start
+                        conflict.file,
+                        conflict.line_start
                     );
                 } else {
                     oj_output!(
                         "Merge conflict in {}: [{}, {}]",
-                        conflict.file, conflict.line_start, conflict.line_end
+                        conflict.file,
+                        conflict.line_start,
+                        conflict.line_end
                     );
                 }
             }
@@ -77,7 +80,7 @@ impl MergeService for Repository {
 
         let merged_tree = merged_tree_obj.unwrap().cast_tree();
         let tree = self.wrap(Stage(merged_tree));
-        tree.save()?;        
+        tree.save()?;
         self.dump_tree(tree.unwrap().0)?;
 
         let mut ours_branch_cloned = ours_branch.cloned();

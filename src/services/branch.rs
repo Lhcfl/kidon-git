@@ -1,10 +1,15 @@
+use crate::models::commit::Commit;
 use crate::{
     models::{
-        branch::{Branch, EMPTY_BRANCH_HEAD_PLACEHOLDER}, object::Object, repo::{Repository, WithRepo}, stage::Stage, Accessible, DirContainer
-    }, services::{tree::{compare_trees, ComparedKind}}
+        Accessible, DirContainer,
+        branch::{Branch, EMPTY_BRANCH_HEAD_PLACEHOLDER},
+        object::Object,
+        repo::{Repository, WithRepo},
+        stage::Stage,
+    },
+    services::tree::{ComparedKind, compare_trees},
 };
 use std::io;
-use crate::models::commit::Commit;
 
 impl WithRepo<'_, Branch> {
     pub fn get_current_commit(&self) -> io::Result<WithRepo<Commit>> {
@@ -97,7 +102,7 @@ impl BranchService for Repository {
         let Err(_) = self.wrap(Branch::accessor(&name)).load() else {
             return Err(BranchCreationError::AlreadyExists);
         };
-        
+
         let Ok(current_branch) = self.head().load_branch() else {
             return Ok(self.wrap(Branch {
                 remote: None,
@@ -105,7 +110,7 @@ impl BranchService for Repository {
                 head: EMPTY_BRANCH_HEAD_PLACEHOLDER.into(),
             }));
         };
-        
+
         let wrap = self.wrap(Branch {
             remote: None,
             name: name.to_string(),
@@ -140,7 +145,7 @@ impl BranchService for Repository {
             let head = self.head_mut();
             head.branch_name = name.into();
             self.save_head()?;
-            return Ok(())
+            return Ok(());
         }
         // Step 1: Check if the branch exists
         if !self.branch_exists(name)? {
@@ -177,7 +182,8 @@ impl BranchService for Repository {
                     // Write new or modified files
                     let blob = self
                         .wrap(Object::accessor(&change.line.sha1))
-                        .load()?.clone()
+                        .load()?
+                        .clone()
                         .cast_blob();
                     // Emmm.. assuming workign dir is .git's parent @lhcfl maybe add pwd root in repo?
                     let path = self.working_dir().join(&change.line.name);
@@ -202,7 +208,7 @@ impl BranchService for Repository {
                 }
             }
         }
-        
+
         // save the target tree to the stage
         target_tree.map(Stage).save()?;
 
@@ -213,4 +219,3 @@ impl BranchService for Repository {
         Ok(())
     }
 }
-

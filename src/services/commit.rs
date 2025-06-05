@@ -2,7 +2,11 @@ use std::io;
 
 use crate::{
     models::{
-        commit::{Commit, CommitBuilder}, object::{Object, Sha1Able}, repo::{Repository, WithRepo}, tree::Tree, Accessible
+        Accessible,
+        commit::{Commit, CommitBuilder},
+        object::{Object, Sha1Able},
+        repo::{Repository, WithRepo},
+        tree::Tree,
     },
     services::tree::compare_trees,
 };
@@ -66,7 +70,11 @@ impl CommitService for Repository {
         tree.save()?;
         let commit = Commit::new(CommitBuilder {
             tree: tree.sha1().into(),
-            parent: if is_new { None } else { Some(branch.head.clone()) },
+            parent: if is_new {
+                None
+            } else {
+                Some(branch.head.clone())
+            },
             message: message.to_string(),
         });
 

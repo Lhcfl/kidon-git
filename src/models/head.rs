@@ -2,11 +2,14 @@
 //! etc.)
 
 use crate::{
-    serde_json_store,
     models::{Accessible, Store},
+    serde_json_store,
 };
-use serde::{ser::SerializeStruct, Deserialize, Serialize};
-use std::{io, path::{Path, PathBuf}};
+use serde::{Deserialize, Serialize, ser::SerializeStruct};
+use std::{
+    io,
+    path::{Path, PathBuf},
+};
 
 use super::{branch::Branch, repo::WithRepo};
 
@@ -31,10 +34,10 @@ impl Serialize for Head {
         let mut state = serializer.serialize_struct("Head", 3)?;
         state.serialize_field("kind", &self.kind)?;
         state.serialize_field("branch_name", &self.branch_name)?;
-        
+
         // fuck the oj test
         state.serialize_field("message", &format!("ref: refs/heads/{}", self.branch_name))?;
-        
+
         state.end()
     }
 }
@@ -49,7 +52,7 @@ impl Store for Head {
 impl<'r> WithRepo<'r, &Head> {
     /// the branch may not exist, so we need to create it if it does not exist
     pub fn load_branch_or_create(&self) -> io::Result<(WithRepo<'r, Branch>, bool)> {
-        let name= self.branch_name.as_str();
+        let name = self.branch_name.as_str();
         let branch = self.wrap(Branch::accessor(&name)).load();
         match branch {
             Ok(branch) => Ok((branch, false)),
@@ -64,7 +67,7 @@ impl<'r> WithRepo<'r, &Head> {
     }
 
     pub fn load_branch(&self) -> io::Result<WithRepo<'r, Branch>> {
-        let name= self.branch_name.as_str();
+        let name = self.branch_name.as_str();
         self.wrap(Branch::accessor(&name)).load()
     }
 }
@@ -80,10 +83,7 @@ mod tests {
             branch_name: "main".to_string(),
         };
         let serialized = serde_json::to_string(&head).unwrap();
-        
-        assert_eq!(
-            serialized.contains("ref: refs/heads/main"),
-            true,
-        );
+
+        assert_eq!(serialized.contains("ref: refs/heads/main"), true,);
     }
 }

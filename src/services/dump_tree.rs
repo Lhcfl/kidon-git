@@ -1,5 +1,8 @@
+use crate::{
+    models::{Accessible, object::Object, repo::Repository, tree::Tree},
+    services::tree::{ComparedKind, compare_trees},
+};
 use std::io;
-use crate::{models::{object::Object, repo::Repository, tree::Tree, Accessible}, services::tree::{compare_trees, ComparedKind}};
 
 pub trait DumpTreeService {
     /// Dump the tree to the working directory
@@ -8,7 +11,7 @@ pub trait DumpTreeService {
 
 impl DumpTreeService for Repository {
     fn dump_tree(&self, target_tree: Tree) -> io::Result<()> {
-       let current_branch = self.head().load_branch()?;
+        let current_branch = self.head().load_branch()?;
 
         let current_commit = current_branch.get_current_commit()?;
         let current_tree = current_commit.get_tree()?;
@@ -21,7 +24,8 @@ impl DumpTreeService for Repository {
                     // Write new or modified files
                     let blob = self
                         .wrap(Object::accessor(&change.line.sha1))
-                        .load()?.clone()
+                        .load()?
+                        .clone()
                         .cast_blob();
                     // Emmm.. assuming workign dir is .git's parent @lhcfl maybe add pwd root in repo?
                     let path = self.working_dir().join(&change.line.name);
@@ -48,6 +52,5 @@ impl DumpTreeService for Repository {
         }
 
         Ok(())
-        
     }
 }

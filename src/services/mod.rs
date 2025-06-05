@@ -8,10 +8,10 @@
 
 pub mod branch;
 pub mod commit;
+pub mod dump_tree;
+pub mod merge;
 pub mod mut_tree;
+pub mod oj;
 pub mod repo;
 pub mod stage;
 pub mod tree;
-pub mod oj;
-pub mod dump_tree;
-pub mod merge;

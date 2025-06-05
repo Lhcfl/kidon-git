@@ -1,6 +1,7 @@
 use super::Exec;
 use crate::{
-    console_output, models::{object::Object, repo::Repository, Accessible}
+    console_output,
+    models::{Accessible, object::Object, repo::Repository},
 };
 use clap::Args;
 use colored::Colorize;
@@ -16,7 +17,10 @@ impl Exec for Log {
     fn exec(&self) -> anyhow::Result<()> {
         let repo = Repository::load()?;
         let Ok(branch) = repo.head().load_branch() else {
-            anyhow::bail!("your current branch '{}' does not have any commits yet", repo.head().branch_name);
+            anyhow::bail!(
+                "your current branch '{}' does not have any commits yet",
+                repo.head().branch_name
+            );
         };
 
         let mut next_sha1 = Some(branch.unwrap().head);

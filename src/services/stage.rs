@@ -1,8 +1,4 @@
-
-use crate::models::{
-    repo::WithRepo,
-    stage::Stage,
-};
+use crate::models::{repo::WithRepo, stage::Stage};
 
 use super::mut_tree::MutableTree;
 

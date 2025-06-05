@@ -1,7 +1,7 @@
-use clap::Args;
-use crate::models::{branch::Branch, repo, Accessible};
+use super::Exec;
+use crate::models::{Accessible, branch::Branch, repo};
 use crate::services::merge::MergeService;
-use super::{Exec};
+use clap::Args;
 
 #[derive(Debug, Args)]
 pub struct Merge {

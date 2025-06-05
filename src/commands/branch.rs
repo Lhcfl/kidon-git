@@ -35,7 +35,7 @@ impl Exec for Branch {
             }
         }
 
-        let repo= Repository::load()?;
+        let repo = Repository::load()?;
         let branch_name = self.name.as_ref().unwrap();
         if self.delete {
             // delete branch

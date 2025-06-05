@@ -1,6 +1,9 @@
 use clap::Args;
 
-use crate::{console_output, models::repo::{Repository, RepositoryInitError}};
+use crate::{
+    console_output,
+    models::repo::{Repository, RepositoryInitError},
+};
 
 use super::Exec;
 

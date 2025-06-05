@@ -1,5 +1,8 @@
 use crate::{
-    console_output, models::repo::Repository, oj_output, services::commit::{CommitCreateResult, CommitService}
+    console_output,
+    models::repo::Repository,
+    oj_output,
+    services::commit::{CommitCreateResult, CommitService},
 };
 use clap::Args;
 
@@ -24,11 +27,7 @@ impl Exec for Commit {
 
         match res {
             CommitCreateResult::Success(res) => {
-                let tip = if res.is_root {
-                    " (root-commit) "
-                } else {
-                    " "
-                };
+                let tip = if res.is_root { " (root-commit) " } else { " " };
 
                 console_output!(
                     "[{}{tip}{}] {message}",
