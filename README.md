@@ -2,7 +2,7 @@
 
 ラスト、きどん！
 
-[documentation](https://lhcfl.github.io/kidon-git/) 
+[documentation](https://lhcfl.github.io/rust-git/) 
 
 ### run
 
